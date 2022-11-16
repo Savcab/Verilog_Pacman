@@ -15,13 +15,17 @@ module pacman_top
         Ld0, Ld1, Ld2, Ld3, Ld4, Ld5, Ld6, Ld7,      // 16 LEDs
 		Ld8, Ld9, Ld10, Ld11, Ld12, Ld13, Ld14, Ld15, 
 		An0, An1, An2, An3, An4, An5, An6, An7,      // 8 seven-LEDs
-		Ca, Cb, Cc, Cd, Ce, Cf, Cg, Dp
+		Ca, Cb, Cc, Cd, Ce, Cf, Cg, Dp,
+		hSync, vSync
 		  );
                                     
 	input    ClkPort;
 	input    BtnL, BtnU, BtnD, BtnR, BtnC;
 	input    Sw0, Sw1, Sw2, Sw3, Sw4, Sw5, Sw6, Sw7;
 	input    Sw8, Sw9, Sw10, Sw11, Sw12, Sw13, Sw14, Sw15;
+	// VGA outputs
+	output hSync, vSync,
+
 	output   Ld0, Ld1, Ld2, Ld3, Ld4,Ld5, Ld6, Ld7;
 	output   Ld8, Ld9, Ld10, Ld11, Ld12,Ld13, Ld14, Ld15;
 	output   An0, An1, An2, An3, An4, An5, An6, An7;
@@ -35,6 +39,12 @@ module pacman_top
 	wire Start, Ack, SCEN_Up, SCEN_Down, SCEN_Left, SCEN_Right;
 	wire Done, Qi, Qc, Qd;
 	wire [7:0] Quotient, Remainder;
+	wire[15:0] score;
+	wire[11:0] rgb;
+
+	// signal for display controller
+	wire bright;
+	wire [9:0] hc, vc;
 
 	
 	/*  LOCAL SIGNALS */
@@ -89,6 +99,7 @@ module pacman_top
 //------------	
 	// In this design, we run the core design at full 50MHz clock!
 	assign	sys_clk = board_clk;
+	assign move_clk = DIV_CLK[19]
 	// assign	sys_clk = DIV_CLK[25];
 
 
@@ -126,14 +137,17 @@ ee201_debouncer #(.N_dc(25)) ee201_debouncer_1
     // Initialize maze with create wall module (TODO)
 							
 						
-	// // instantiate the core divider design. Note the .SCEN(SCEN)
-	// divider_timing divider (    .Xin(Xin), .Yin(Yin), 
-	// 							.Start(Start), .Ack(Ack), 
-	// 							.Clk(sys_clk), .Reset(Reset), .SCEN(SCEN), 
-	// 							.Done(Done), .Quotient(Quotient), .Remainder(Remainder), .Qi(Qi), .Qc(Qc), .Qd(Qd));	
-    pacman_movement ();
-    
-													
+	// Initialize display controller
+	display_controller dc(.clk(sys_clk), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
+
+	// Initialize pacman movement module
+    pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .bright(bright), .Left(SCEN_Left), .Right(SCEN_Right),
+							.Up(SCEN_Up), .Down(SCEN_Down), .score(score), .hCount(hc), .vCount(vc), .maze(maze), .intersection(intersection) , 
+							.rgb(rgb));
+
+	// Initialize the score module
+
+	// Initialize all the ghost modules
 
 //------------
 // OUTPUT: LEDS

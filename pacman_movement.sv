@@ -2,6 +2,7 @@ module pacman_movement (
 	input clk,
 	input reset,
 	input ack,
+	input start,
 	input bright,
 	input Left,
 	input Right,
@@ -9,11 +10,12 @@ module pacman_movement (
 	input Down,
 	input [15:0] score,
 	input [9:0] hCount, vCount,
-	input [479:0] maze [639:0],
-	input [479:0] intersection [639:0],
+	input [479:0][639:0] maze,
+	input [479:0][639:0] intersection,
+	input win,
+	input lose,
 	output reg [11:0] rgb,
-	output reg [9:0] pacX,
-	output reg [9:0] pacY
+	output pacmanFill
 );
 
 reg [7:0] state;
@@ -24,23 +26,23 @@ INI = 	8'b00000001,
 STILL = 8'b00000010,
 LEFT = 	8'b00000100, 
 RIGHT = 8'b00001000,
-UP =  	8'b00010000;
-DOWN =  8'b00100000;
-WIN =   8'b01000000;
+UP =  	8'b00010000,
+DOWN =  8'b00100000,
+WIN =   8'b01000000,
 LOSE =  8'b10000000;
 
 parameter YELLOW = 12'b111111110000;
 
 localparam
-xLowerBound = 0;
-xUpperBound = 640;
-yLowerBound = 0;
-yUpperBound = 480;
-speed = 1;
-winningScore = 30;
-pixelSize = 5;
-xIni = 8;
-yIni = 8;
+xLowerBound = 0,
+xUpperBound = 640,
+yLowerBound = 0,
+yUpperBound = 480,
+speed = 5,
+winningScore = 30,
+pixelSize = 5,
+xIni = 300,
+yIni = 300;
 
 // Local wires for simplicity
 wire atIntersection, leftCtrl, upCtrl, rightCtrl, downCtrl, cgLeft, cgUp, cgRight, cgDown;
@@ -58,14 +60,12 @@ assign cgDown = (pacY + pixelSize < yUpperBound && maze[pacY+pixelSize][pacX] !=
 //	for coloring pacman
 assign pacmanFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)) 
 						&& (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2));
-//TODO
-assign touchGhost = ();
 
 
 // for coloring
 always@ (*) begin
 	if (~bright)
-		rgb = 12'0000_0000_0000;
+		rgb = 12'b0000_0000_0000;
 	else if (pacmanFill)
 		rgb = YELLOW;
 end
@@ -83,7 +83,7 @@ always @(posedge clk, posedge reset)
          (* full_case, parallel_case *)
 		 // part of state transition for STILL, LEFT, RIGHT, UP, DOWN are the same
 		if (state == STILL || state == LEFT || state == UP || state == RIGHT || state == DOWN) begin
-			if (intersection[pacX][paxY] == 1) begin
+			if (intersection[pacX][pacY] == 1) begin
 				if (leftCtrl && cgLeft)
 					state <= LEFT;
 				else if (upCtrl && cgUp)
@@ -95,9 +95,9 @@ always @(posedge clk, posedge reset)
 				else
 					state <= STILL;
 			end
-			if (score >= winningScore)
+			if (win)
 				state <= WIN;
-			if (touchGhost) 
+			if (lose) 
 				state <= LOSE;
 		end
 
@@ -105,7 +105,7 @@ always @(posedge clk, posedge reset)
 	        INI	: 
 	          begin
 		         // state transition
-		         if (Start)
+		         if (start)
 		           state <= STILL;
 		         // RTL operations            	              
 				 //INITIAL VALUES TO BE DETERMINED

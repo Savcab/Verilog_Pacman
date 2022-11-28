@@ -173,18 +173,12 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
 
 // //------------
 // // SSD (Seven Segment Display)
-// 	// reg [3:0]	SSD;
-// 	// wire [3:0]	SSD3, SSD2, SSD1, SSD0;
 	
-// 	// The 8 SSDs display Xin, Yin, Quotient, and Reminder  
-// 	assign SSD7 = Xin[7:4];
-// 	assign SSD6 = Xin[3:0];	
-// 	assign SSD5 = Yin[7:4];
-// 	assign SSD4 = Yin[3:0];
-// 	assign SSD3 = Quotient[7:4];
-// 	assign SSD2 = Quotient[3:0];
-// 	assign SSD1 = Remainder[7:4];
-// 	assign SSD0 = Remainder[3:0];
+// 	// The 8 SSDs to show the score
+	assign SSD7 = score[15:12];
+	assign SSD6 = score[11:8];	
+	assign SSD5 = score[7:4];
+	assign SSD4 = score[3:0];
 
 
 // 	// need a scan clk for the seven segment display 
@@ -208,61 +202,51 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
 // 	//  DIV_CLK[19]       |___________|           |___________|
 // 	//
 	
-// 	assign ssdscan_clk = DIV_CLK[20:18];
+	assign ssdscan_clk = DIV_CLK[20:19];
 
-// 	assign An0	=  !(~(ssdscan_clk[2]) && ~(ssdscan_clk[1]) && ~(ssdscan_clk[0]));  // when ssdscan_clk = 000
-// 	assign An1	=  !(~(ssdscan_clk[2]) && ~(ssdscan_clk[1]) &&  (ssdscan_clk[0]));  // when ssdscan_clk = 001
-// 	assign An2	=  !(~(ssdscan_clk[2]) &&  (ssdscan_clk[1]) && ~(ssdscan_clk[0]));  // when ssdscan_clk = 010
-// 	assign An3	=  !(~(ssdscan_clk[2]) &&  (ssdscan_clk[1]) &&  (ssdscan_clk[0]));  // when ssdscan_clk = 011
-	
-// 	assign An4	=  !( (ssdscan_clk[2]) && ~(ssdscan_clk[1]) && ~(ssdscan_clk[0]));  // when ssdscan_clk = 100
-// 	assign An5	=  !( (ssdscan_clk[2]) && ~(ssdscan_clk[1]) &&  (ssdscan_clk[0]));  // when ssdscan_clk = 101
-// 	assign An6	=  !( (ssdscan_clk[2]) &&  (ssdscan_clk[1]) && ~(ssdscan_clk[0]));  // when ssdscan_clk = 110
-// 	assign An7	=  !( (ssdscan_clk[2]) &&  (ssdscan_clk[1]) &&  (ssdscan_clk[0]));  // when ssdscan_clk = 111
+	assign An4 = !(~ssdscan_clk[1] && ~ssdscan_clk[0]); // when ssdscan_clk = 00
+	assign An5 = !(~ssdscan_clk[1] && ssdscan_clk[0]); // when ssdscan_clk = 01
+	assign An6 = !(ssdscan_clk[1] && ~ssdscan_clk[0]); // when ssdscan_clk = 10
+	assign An7 = !(ssdscan_clk[1] && ssdscan_clk[0]); //when ssdscan_clk = 11
 	
 	
-// 	always @ (ssdscan_clk, SSD0, SSD1, SSD2, SSD3, SSD4, SSD5, SSD6, SSD7)
-// 	begin : SSD_SCAN_OUT
-// 		case (ssdscan_clk) 
-// 				  3'b000: SSD = SSD0;
-// 				  3'b001: SSD = SSD1;
-// 				  3'b010: SSD = SSD2;
-// 				  3'b011: SSD = SSD3;
-// 				  3'b100: SSD = SSD4;
-// 				  3'b101: SSD = SSD5;
-// 				  3'b110: SSD = SSD6;
-// 				  3'b111: SSD = SSD7;
-// 		endcase 
-// 	end
+	always @ (ssdscan_clk, SSD4, SSD5, SSD6, SSD7)
+	begin : SSD_SCAN_OUT
+		case (ssdscan_clk) 
+				2'b00: SSD = SSD4;
+				2'b01: SSD = SSD5;
+				2'b10: SSD = SSD6;
+				2'b11: SSD = SSD7;
+		endcase 
+	end
 
 // 	// Following is Hex-to-SSD conversion
-// 	always @ (SSD) 
-// 	begin : HEX_TO_SSD
-// 		case (SSD) // in this solution file the dot points are made to glow by making Dp = 0
-// 		    //                                                                abcdefg,Dp
-// 			4'b0000: SSD_CATHODES = 7'b0000001; // 0
-// 			4'b0001: SSD_CATHODES = 7'b1001111; // 1
-// 			4'b0010: SSD_CATHODES = 7'b0010010; // 2
-// 			4'b0011: SSD_CATHODES = 7'b0000110; // 3
-// 			4'b0100: SSD_CATHODES = 7'b1001100; // 4
-// 			4'b0101: SSD_CATHODES = 7'b0100100; // 5
-// 			4'b0110: SSD_CATHODES = 7'b0100000; // 6
-// 			4'b0111: SSD_CATHODES = 7'b0001111; // 7
-// 			4'b1000: SSD_CATHODES = 7'b0000000; // 8
-// 			4'b1001: SSD_CATHODES = 7'b0000100; // 9
-// 			4'b1010: SSD_CATHODES = 7'b0001000; // A
-// 			4'b1011: SSD_CATHODES = 7'b1100000; // B
-// 			4'b1100: SSD_CATHODES = 7'b0110001; // C
-// 			4'b1101: SSD_CATHODES = 7'b1000010; // D
-// 			4'b1110: SSD_CATHODES = 7'b0110000; // E
-// 			4'b1111: SSD_CATHODES = 7'b0111000; // F    
-// 			default: SSD_CATHODES = 7'bXXXXXXX; // default is not needed as we covered all cases
-// 		endcase
-// 	end	
+	always @ (SSD) 
+	begin : HEX_TO_SSD
+		case (SSD) // in this solution file the dot points are made to glow by making Dp = 0
+		    //                                                                abcdefg,Dp
+			4'b0000: SSD_CATHODES = 7'b0000001; // 0
+			4'b0001: SSD_CATHODES = 7'b1001111; // 1
+			4'b0010: SSD_CATHODES = 7'b0010010; // 2
+			4'b0011: SSD_CATHODES = 7'b0000110; // 3
+			4'b0100: SSD_CATHODES = 7'b1001100; // 4
+			4'b0101: SSD_CATHODES = 7'b0100100; // 5
+			4'b0110: SSD_CATHODES = 7'b0100000; // 6
+			4'b0111: SSD_CATHODES = 7'b0001111; // 7
+			4'b1000: SSD_CATHODES = 7'b0000000; // 8
+			4'b1001: SSD_CATHODES = 7'b0000100; // 9
+			4'b1010: SSD_CATHODES = 7'b0001000; // A
+			4'b1011: SSD_CATHODES = 7'b1100000; // B
+			4'b1100: SSD_CATHODES = 7'b0110001; // C
+			4'b1101: SSD_CATHODES = 7'b1000010; // D
+			4'b1110: SSD_CATHODES = 7'b0110000; // E
+			4'b1111: SSD_CATHODES = 7'b0111000; // F    
+			default: SSD_CATHODES = 7'bXXXXXXX; // default is not needed as we covered all cases
+		endcase
+	end	
 	
-// 	// reg [6:0]  SSD_CATHODES;
-// 	assign {Ca, Cb, Cc, Cd, Ce, Cf, Cg} = {SSD_CATHODES}; 
-// 	// assign Dp = 1'b0; // For TA's solution
-// 	assign Dp = 1'b1; // For Student's exercise
+	assign {Ca, Cb, Cc, Cd, Ce, Cf, Cg} = {SSD_CATHODES}; 
+	// assign Dp = 1'b0; // For TA's solution
+	assign Dp = 1'b1; // For Student's exercise
 	
 endmodule

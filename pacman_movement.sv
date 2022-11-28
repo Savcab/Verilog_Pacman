@@ -10,8 +10,8 @@ module pacman_movement (
 	input Down,
 	input [15:0] score,
 	input [9:0] hCount, vCount,
-	input [479:0][639:0] maze,
-	input [479:0][639:0] intersection,
+	// input [479:0][639:0] maze,
+	input bit[3:0] [431:0][379:0] intersection,
 	input win,
 	input lose,
 	output reg [11:0] rgb,
@@ -31,7 +31,12 @@ DOWN =  8'b00100000,
 WIN =   8'b01000000,
 LOSE =  8'b10000000;
 
-parameter YELLOW = 12'b111111110000;
+localparam
+XOFFSET = 24,
+YOFFSET = 130;
+
+
+parameter YELLOW = 12'b1111_1111_0000;
 
 localparam
 xLowerBound = 0,
@@ -46,7 +51,7 @@ yIni = 300;
 
 // Local wires for simplicity
 wire atIntersection, leftCtrl, upCtrl, rightCtrl, downCtrl, cgLeft, cgUp, cgRight, cgDown;
-assign atIntersection = (intersection[pacX][pacY] == 1);
+assign atIntersection = (intersection[pacY + YOFFSET][pacX + XOFFSET] != 4'b0000);
 assign leftCtrl = (Left && ~Up && ~Right && ~Down);
 assign upCtrl = (~Left && Up && ~Right && ~Down);
 assign rightCtrl = (~Left && ~Up && Right && ~Down);
@@ -54,10 +59,10 @@ assign downCtrl = (~Left && ~Up && ~Right && Down);
 assign noCtrl = (~leftCtrl && ~upCtrl && rightCtrl && downCtrl);
 // 	cg stands for can go
 //	intersection[i][j] is treated as {left, up, right, down}
-assign cgLeft = (intersection[pacY][pacX][0] == 1);
-assign cgUp = (intersection[pacY][pacX][1] == 1);
-assign cgRight = (intersection[pacY][pacX][2] == 1);
-assign cgDown = (intersection[pacY][pacX][3] == 1);
+assign cgLeft = (intersection[pacY + YOFFSET][pacX + XOFFSET][0] == 1);
+assign cgUp = (intersection[pacY + YOFFSET][pacX + XOFFSET][1] == 1);
+assign cgRight = (intersection[pacY + YOFFSET][pacX + XOFFSET][2] == 1);
+assign cgDown = (intersection[pacY + YOFFSET][pacX + XOFFSET][3] == 1);
 
 // assign cgLeft = (pacX - pixelSize > xLowerBound && maze[pacY][pacX-pixelSize] != 1);
 // assign cgUp = (pacY - pixelSize > yLowerBound && maze[pacY-pixelSize][pacX] != 1);
@@ -90,7 +95,7 @@ always @(posedge clk, posedge reset)
          (* full_case, parallel_case *)
 		 // part of state transition for STILL, LEFT, RIGHT, UP, DOWN are the same
 		if (state == STILL || state == LEFT || state == UP || state == RIGHT || state == DOWN) begin
-			if (intersection[pacX][pacY] == 1) begin
+			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
 				if (leftCtrl && cgLeft)
 					state <= LEFT;
 				else if (upCtrl && cgUp)

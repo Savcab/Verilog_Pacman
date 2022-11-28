@@ -15,21 +15,28 @@ module scoring_module (
 	output reg [15:0] score,
 	output reg [11:0] rgb,
 	output winOut,
-	output loseOut
+	output loseOut,
+    output [479:0] new_pellets [639:0]
     );
 
 	reg [4:0] state;
-    reg [15:0] score;
-
+    // inialize new_pellets
+	for(int i = 0; i < $size(pellets) ; i++)
+		for(int j = 0 ; j < $size(pellets[0]) ; j++)
+            new_pellets[i][j] = pellets[i][j];
 
     // winning and losing conditions
 	
 	localparam
-	INI = 4'b0001;
-	STANDBY = 4'b0010;
-	WIN = 4'b0100;
+	INI = 4'b0001,
+	STANDBY = 4'b0010,
+	WIN = 4'b0100,
 	LOSE = 4'b1000;
-	
+
+    assign win = (state == WIN || (state == STANDBY && score >= 36));
+    assign lose = (state == LOSE || (state == STANDBY && pacmanFill && ghostFills));
+    assign winOut = win;
+    assign loseOut = lose;
 
 
 	always@ (posedge clk, posedge reset) begin
@@ -42,33 +49,34 @@ module scoring_module (
                 begin
                     case (state)
                         INI:
-                            if (start) begin
+                            begin
+                            if (start)
                                 state <= STANDBY;
-                            end
                             score <= 0;
-                            winOut <= 0;
-                            loseOut <= 0;
+                            end
                         STANDBY:
+                            begin
                             // state transitions
-                            if (pacmanFill && ghostFills)
+                            if (lose)
                                 state <= LOSE;
-                            else if (score >= 36)
+                            else if (win)
                                 state <= WIN;
                             // RTL operations
                             if (pellets[pacX][pacY] == 1) begin
-                                pellets[pacX][pacY] <= 0;
+                                new_pellets[pacX][pacY] <= 0;
                                 score <= score + 1;
                             end
-
+                            end
                         WIN:
-                            winOut <= 1;
+                            begin
                             if (ack)
                                 state <= INI;
+                            end
                         LOSE:
-                            loseOut <= 1;
+                            begin
                             if (ack)
                                 state <= INI;
-
+                            end
                     endcase
                 end
         end

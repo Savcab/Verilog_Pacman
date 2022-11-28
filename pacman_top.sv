@@ -127,20 +127,16 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
     // Food register
     reg [479:0][639:0] food;
     // Intersection register
-    reg [479:0][639:0] intersection;
+    bit[3:0] intersection [479:0][639:0];
 
 	// For testing purposes
 	initial begin
 	for(int i = 0; i < $size(intersection) ; i++)
 		for(int j = 0 ; j < $size(intersection[0]) ; j++)
-			intersection[i][j] = 1;
+			intersection[i][j] = 15; // 15 = 4'b1111
 	end
 	// Win and lose signal
 	wire win, lose;
-
-	// wire for collision with each ghost (assume there are three ghosts)
-	wire touchGhost1, touchGhost2, touchGhost3;
-	assign lose = (touchGhost1 || touchGhost2 || touchGhost3);
 
     // Initialize maze with create wall module (TODO)
 							
@@ -163,6 +159,9 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
 	
 
 	// Initialize the score module
+	wire ghostFills;
+	assign ghostFills = (ghostFill1 || ghostFill2 || ghostFill3 || ghostFill4);
+	scoring scoring_module(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .winIn(win), .loseIn(lose), .winOut(win), .loseOut(lose), ..., .ghostFills(ghostFills));
 
 
 //------------

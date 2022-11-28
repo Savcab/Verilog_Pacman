@@ -10,7 +10,7 @@ module scoring_module (
 	input [479:0] maze [639:0],
 	input [479:0] intersection [639:0],
     input [479:0] pellets [639:0],
-	input [3:0] ghostFills,
+	input ghostFills,
 	input pacmanFill,
 	output reg [15:0] score,
 	output reg [11:0] rgb,
@@ -50,7 +50,7 @@ module scoring_module (
                             loseOut <= 0;
                         STANDBY:
                             // state transitions
-                            if (pacmanFill && (ghostFills[0] || ghostFills[1] || ghostFills[2] || ghostFills[3]))
+                            if (pacmanFill && ghostFills)
                                 state <= LOSE;
                             else if (score >= 36)
                                 state <= WIN;

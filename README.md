@@ -3,9 +3,13 @@ Pacman in verilog. Can be run of a Nexys4 FPGA board.. Final project for EE354 a
 
 How certain aspects are implemented:
     The Pacman module takes in maze 2D register and checks for collision with wall.
-        Outputs pacman's (x, y)
+        Outputs pacmanFill (if the current hCount and vCount is outputing the RGB of pacman)
 
-    Each ghost module intakes pacman (x, y) and outputs if they collide or not
+    Collision 
+
+    
+
+    The scoring module will detect if pacFill and pelletFill are invoked at the same time, or if pacFill and ghostFill is invoked at the same time. (ghostFill will be a OR of all the seperate ghostFills)
         There will be a wire in the top module that is an OR of all the ghost collision outputs and acts as an input for Pacman to see if they collide or not
 
     Pacman and pellet collision is accounted for by the scoring module

@@ -53,10 +53,17 @@ assign rightCtrl = (~Left && ~Up && Right && ~Down);
 assign downCtrl = (~Left && ~Up && ~Right && Down);
 assign noCtrl = (~leftCtrl && ~upCtrl && rightCtrl && downCtrl);
 // 	cg stands for can go
-assign cgLeft = (pacX - pixelSize > xLowerBound && maze[pacY][pacX-pixelSize] != 1);
-assign cgUp = (pacY - pixelSize > yLowerBound && maze[pacY-pixelSize][pacX] != 1);
-assign cgRight = (pacX + pixelSize < xUpperBound && maze[pacY][pacX+pixelSize] != 1);
-assign cgDown = (pacY + pixelSize < yUpperBound && maze[pacY+pixelSize][pacX] != 1);
+//	intersection[i][j] is treated as {left, up, right, down}
+assign cgLeft = (intersection[pacY][pacX][0] == 1);
+assign cgUp = (intersection[pacY][pacX][1] == 1);
+assign cgRight = (intersection[pacY][pacX][2] == 1);
+assign cgDown = (intersection[pacY][pacX][3] == 1);
+
+// assign cgLeft = (pacX - pixelSize > xLowerBound && maze[pacY][pacX-pixelSize] != 1);
+// assign cgUp = (pacY - pixelSize > yLowerBound && maze[pacY-pixelSize][pacX] != 1);
+// assign cgRight = (pacX + pixelSize < xUpperBound && maze[pacY][pacX+pixelSize] != 1);
+// assign cgDown = (pacY + pixelSize < yUpperBound && maze[pacY+pixelSize][pacX] != 1);
+
 //	for coloring pacman
 assign pacmanFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)) 
 						&& (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2));

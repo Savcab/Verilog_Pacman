@@ -31,6 +31,8 @@ endfunction
 
 wire compA, compB, compC, compD, compE, compF, compG, compH, compI, compJ, compK, compL, compM, compN, compO, compP, compQ, compR, compS;
 
+wire comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13, comp14, comp15, comp16, comp17, comp18, comp19, comp20, comp21, comp22, comp23, comp24, comp25;
+
 assign compA = inBorder(hCount, vCount, OFFSETH1 + 144, OFFSETV1 + 8, OFFSETH2 + 156, OFFSETV2 + 48);
 assign compB = inBorder(hCount, vCount, OFFSETH1 + 224, OFFSETV1 + 8, OFFSETH2 + 236, OFFSETV2 + 48);
 assign compC = inBorder(hCount, vCount, OFFSETH1 + 104, OFFSETV1 + 36, OFFSETH2 + 116, OFFSETV2 + 88);
@@ -51,9 +53,35 @@ assign compQ = inBorder(hCount, vCount, OFFSETH1 + 224, OFFSETV1 + 332, OFFSETH2
 assign compR = inBorder(hCount, vCount, OFFSETH1 + 332, OFFSETV1 + 344, OFFSETH2 + 344, OFFSETV2 + 384);
 assign compS = inBorder(hCount, vCount, OFFSETH1 + 184, OFFSETV1 + 332, OFFSETH2 + 196, OFFSETV2 + 356);
 
+assign comp1 = inBorder(hCount, vCount, OFFSETH1 + 36, OFFSETV1 + 36, OFFSETH2 + 76, OFFSETV2 + 48);
+assign comp2 = inBorder(hCount, vCount, OFFSETH1 + 304, OFFSETV1 + 36, OFFSETH2 + 344, OFFSETV2 + 48);
+assign comp3 = inBorder(hCount, vCount, OFFSETH1 + 36, OFFSETV1 + 76, OFFSETH2 + 76, OFFSETV2 + 88);
+assign comp4 = inBorder(hCount, vCount, OFFSETH1 + 116, OFFSETV1 + 76, OFFSETH2 + 156, OFFSETV2 + 88);
+assign comp5 = inBorder(hCount, vCount, OFFSETH1 + 224, OFFSETV1 + 76, OFFSETH2 + 264, OFFSETV2 + 88);
+assign comp6 = inBorder(hCount, vCount, OFFSETH1 + 304, OFFSETV1 + 76, OFFSETH2 + 344, OFFSETV2 + 88);
+assign comp7 = inBorder(hCount, vCount, OFFSETH1 + 76, OFFSETV1 + 116, OFFSETH2 + 116, OFFSETV2 + 128);
+assign comp8 = inBorder(hCount, vCount, OFFSETH1 + 144, OFFSETV1 + 116, OFFSETH2 + 184, OFFSETV2 + 128);
+assign comp9 = inBorder(hCount, vCount, OFFSETH1 + 196, OFFSETV1 + 116, OFFSETH2 + 236, OFFSETV2 + 128);
+assign comp10 = inBorder(hCount, vCount, OFFSETH1 + 264, OFFSETV1 + 116, OFFSETH2 + 304, OFFSETV2 + 128);
+assign comp11 = inBorder(hCount, vCount, OFFSETH1 + 36, OFFSETV1 + 224, OFFSETH2 + 76, OFFSETV2 + 236);
+assign comp12 = inBorder(hCount, vCount, OFFSETH1 + 304, OFFSETV1 + 224, OFFSETH2 + 344, OFFSETV2 + 236);
+assign comp13 = inBorder(hCount, vCount, OFFSETH1 + 144, OFFSETV1 + 252, OFFSETH2 + 184, OFFSETV2 + 264);
+assign comp14 = inBorder(hCount, vCount, OFFSETH1 + 196, OFFSETV1 + 252, OFFSETH2 + 236, OFFSETV2 + 264);
+assign comp15 = inBorder(hCount, vCount, OFFSETH1 + 8, OFFSETV1 + 264, OFFSETH2 + 36, OFFSETV2 + 276);
+assign comp16 = inBorder(hCount, vCount, OFFSETH1 + 344, OFFSETV1 + 264, OFFSETH2 + 372, OFFSETV2 + 276);
+assign comp17 = inBorder(hCount, vCount, OFFSETH1 + 116, OFFSETV1 + 292, OFFSETH2 + 156, OFFSETV2 + 304);
+assign comp18 = inBorder(hCount, vCount, OFFSETH1 + 224, OFFSETV1 + 292, OFFSETH2 + 264, OFFSETV2 + 304);
+assign comp19 = inBorder(hCount, vCount, OFFSETH1 + 36, OFFSETV1 + 304, OFFSETH2 + 76, OFFSETV2 + 316);
+assign comp20 = inBorder(hCount, vCount, OFFSETH1 + 304, OFFSETV1 + 304, OFFSETH2 + 344, OFFSETV2 + 316);
+assign comp21 = inBorder(hCount, vCount, OFFSETH1 + 76, OFFSETV1 + 344, OFFSETH2 + 104, OFFSETV2 + 356);
+assign comp22 = inBorder(hCount, vCount, OFFSETH1 + 276, OFFSETV1 + 344, OFFSETH2 + 304, OFFSETV2 + 356);
+assign comp23 = inBorder(hCount, vCount, OFFSETH1 + 36, OFFSETV1 + 384, OFFSETH2 + 116, OFFSETV2 + 396);
+assign comp24 = inBorder(hCount, vCount, OFFSETH1 + 144, OFFSETV1 + 384, OFFSETH2 + 236, OFFSETV2 + 396);
+assign comp25 = inBorder(hCount, vCount, OFFSETH1 + 264, OFFSETV1 + 384, OFFSETH2 + 344, OFFSETV2 + 396);
 
-//	for coloring wall
-assign wallFill = compA || compB || compC || compD || compE|| compF || compG || compH || compI || compJ || compK || compL || compM || compN || compO || compP || compQ || compR || compS;
+
+// for coloring wall
+assign wallFill = compA || compB || compC || compD || compE|| compF || compG || compH || compI || compJ || compK || compL || compM || compN || compO || compP || compQ || compR || compS || comp1 || comp2 || comp3 || comp4 || comp5 || comp6 || comp7 || comp8 || comp9 || comp10 || comp11 || comp12 || comp13 || comp14 || comp15 || comp16 || comp17 || comp18 || comp19 || comp20 || comp21 || comp22 || comp23 || comp24 || comp25;
 
 
 // for coloring

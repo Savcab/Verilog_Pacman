@@ -136,7 +136,7 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 	
 	// Initialize pacman movement module
     pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .Left(CCEN_Left), .Right(CCEN_Right),
-							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .win(win), .lose(lose), .pacmanFill(pacmanFill));
+							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .wallFill(wallFill), .win(win), .lose(lose), .pacmanFill(pacmanFill));
 
 	// Initialize first ghost
 	// Initialize second ghost

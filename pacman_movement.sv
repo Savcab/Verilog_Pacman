@@ -9,6 +9,7 @@ module pacman_movement (
 	input Down,
 	input [15:0] score,
 	input [9:0] hCount, vCount,
+	input wallFill,
 	input win,
 	input lose,
 	output pacmanFill
@@ -23,9 +24,8 @@ parameter OFFSETH2 = 10'd130 + 10'd144;
 localparam
 winningScore = 30,
 xIni = 190,
-yIni = 318;
-
-// pixelSize = 21,
+yIni = 318,
+pacWidth = 17;
 
 // Local wires for simplicity
 wire leftCtrl, upCtrl, rightCtrl, downCtrl, cgLeft, cgUp, cgRight, cgDown;
@@ -39,13 +39,9 @@ initial begin
 	pacX = xIni;
 	pacY = yIni;
 	counter = 50'd0;
+	cgDirections = 4'b1111;
 end
 
-// reg[49:0] counter;
-
-//	for coloring pacman
-// assign pacmanFill = ((hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)+1)) 
-// 						&& ((vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2)+1));
 assign leftCtrl = (Left && ~Up && ~Right && ~Down);
 assign upCtrl = (~Left && Up && ~Right && ~Down);
 assign rightCtrl = (~Left && ~Up && Right && ~Down);
@@ -54,31 +50,43 @@ assign noCtrl = (~leftCtrl && ~upCtrl && ~rightCtrl && ~downCtrl);
 
 assign {cgLeft, cgUp, cgRight, cgDown} = cgDirections;
 
-assign pacmanFill = ((hCount >= (pacX + OFFSETH1 - 10'd8)) && (hCount <= (pacX + OFFSETH1 + 10'd8))) && ((vCount >= (pacY + OFFSETV1 - 10'd8)) && (vCount <= (pacY + OFFSETV1 + 10'd8)));
+// For coloring pacman
+assign pacmanFill = ((hCount >= (pacX + OFFSETH1 - ((pacWidth-1)/2))) && (hCount <= (pacX + OFFSETH1 + ((pacWidth-1)/2)))) && ((vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2))) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))));
 // directionFill is the pixel right above that direction on pacman
-// assign leftFill = (hCount == pacX-(pixelSize/2)) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
-// assign upFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY-(pixelSize/2));
-// assign rightFill = (hCount == pacX+(pixelSize/2) + 1) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
-// assign downFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY+(pixelSize/2)+1);
+assign leftFill = (hCount == pacX + OFFSETH1 - ((pacWidth-1)/2) - 1) && (vCount <= pacY + OFFSETV1 + ((pacWidth-1)/2)) && (vCount >= pacY + OFFSETV1 - ((pacWidth-1)/2));
+assign upFill = (hCount <= pacX + OFFSETH1 + ((pacWidth-1)/2)) && (hCount >= pacX + OFFSETH1 - ((pacWidth-1)/2)) && (vCount == pacY + OFFSETV1 - ((pacWidth-1)/2) - 1);
+assign rightFill = (hCount == pacX + OFFSETH1 + ((pacWidth-1)/2) + 1) && (vCount <= pacY + OFFSETV1 + ((pacWidth-1)/2)) && (vCount >= pacY + OFFSETV1 - ((pacWidth-1)/2));
+assign downFill = (hCount <= pacX + OFFSETH1 + ((pacWidth-1)/2)) && (hCount >= pacX + OFFSETH1 - ((pacWidth-1)/2)) && (vCount == pacY + OFFSETV1 + ((pacWidth-1)/2) + 1);
 
-// initial begin
-// 	cgDirections <= 4'b1111;
-// end
+// Always check to see if a direction becomes unavailable
+always@ (posedge clk) begin
+	if (leftFill && wallFill) begin
+		cgDirections <= cgDirections & 4'b0111;
+	end else if (upFill && wallFill) begin
+		cgDirections <= cgDirections & 4'b1011;
+	end else if (rightFill && wallFill) begin
+		cgDirections <= cgDirections & 4'b1101;
+	end else if (downFill && wallFill) begin
+		cgDirections <= cgDirections & 4'b1110;
+	end
+end
 
 always@ (posedge clk, posedge reset) begin
 	counter = counter + 50'b1;
+
 	if (reset) begin
 		pacX = xIni;
 		pacY = yIni;
 		counter = 50'd0;
+		cgDirections = 4'b1111;
 	end else if (counter >= 50'd10000) begin
-		if (leftCtrl) begin
+		if (leftCtrl && cgLeft) begin
 			pacX = pacX - 10'd1;
-		end else if (rightCtrl) begin
+		end else if (rightCtrl && cgRight) begin
 			pacX = pacX + 10'd1;
-		end else if (upCtrl) begin
+		end else if (upCtrl && cgUp) begin
 			pacY = pacY - 10'd1;
-		end else if (downCtrl) begin
+		end else if (downCtrl && cgDown) begin
 			pacY = pacY + 10'd1;
 		end else begin end
 		/*
@@ -102,7 +110,10 @@ always@ (posedge clk, posedge reset) begin
 			pacX = 10'd380;
 		end
 		*/
+
 		counter = 50'd0;
+		// Reset can go directions
+		cgDirections = 4'b1111;
 	end
 end
 

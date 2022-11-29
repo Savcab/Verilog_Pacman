@@ -1,9 +1,7 @@
 module wall_module (
 	input clk,
-	input bright,
 	input pacX, pacY,
     input [9:0] hCount, vCount,
-	output reg [11:0] rgb,
 	output wallFill
 );
 
@@ -34,20 +32,6 @@ module wall_module (
 	wire compA, compB, compC, compD, compE, compF, compG, compH, compI, compJ, compK, compL, compM, compN, compO, compP, compQ, compR, compS;
 	wire comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13, comp14, comp15, comp16, comp17, comp18, comp19, comp20, comp21, comp22, comp23, comp24, comp25;
 	wire pacManFill;
-
-	// // GENERAL: Coloring Display //
-	// always@ (*)
-	// 	if (~bright)
-	// 		rgb = BLACK; // force black if NOT bright
-	// 	else if (wallFill == 1)
-	// 		rgb = WALLCOLOR; // color of wall
-	// 	else if (pacManFill == 1)
-	// 		rgb = YELLOW;
-	// 	else 
-	// 		rgb = BLACK; // background color
-
-	// assign pacman shape
-	// assign pacManFill = inBorderPacMan(300, 300);
 
 	// vertical wall components
 	assign compA = inBorder(144, 8, 156, 48);

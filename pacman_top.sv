@@ -32,7 +32,7 @@ module pacman_top
 	wire [9:0] pacX, pacY;
 	wire Start, Ack, CCEN_Up, CCEN_Down, CCEN_Left, CCEN_Right, SCEN_Center;
 	wire[15:0] score;
-	wire[11:0] rgb;
+	reg[11:0] rgb;
 	assign vgaR = rgb[11:8];
 	assign vgaG = rgb[7:4];
 	assign vgaB = rgb[3:0];
@@ -125,26 +125,18 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 	// All the fill signals
 	wire pacmanFill, wallFill;
 	wire pX, pY;
-	wire [49:0] pac_counter;
 
 
     // Initialize maze with create wall module 
-	wall_module wall(.clk(sys_clk), .bright(bright), .pacX(pX), .pacY(pY), .hCount(hc), .vCount(vc), .rgb(rgb), .wallFill(wallFill));
+	wall_module wall(.clk(sys_clk), .pacX(pX), .pacY(pY), .hCount(hc), .vCount(vc), .wallFill(wallFill));
 						
 	// Initialize display controller
-	display_controller dc(.clk(sys_clk), .hSync(hSync), .vSync(vSync), .wallFill(wallFill), .pacmanFill(pacmanFill), .bright(bright), .rgb(rgb), .hCount(hc), .vCount(vc));
+	display_controller dc(.clk(sys_clk), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
 	
 	
 	// Initialize pacman movement module
-    pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .bright(bright), .Left(CCEN_Left), .Right(CCEN_Right),
-							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .win(win), .lose(lose), .pacmanFill(pacmanFill),
-							.counter(pac_counter));
-
-	// FOR DEBUGGING
-	assign score = pac_counter[15:0];
-
-	// assume for now there are 4 ghosts
-
+    pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .Left(CCEN_Left), .Right(CCEN_Right),
+							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .win(win), .lose(lose), .pacmanFill(pacmanFill));
 
 	// Initialize first ghost
 	// Initialize second ghost
@@ -155,6 +147,24 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 	// Initialize the score module
 	// scoring scoring_module(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .winIn(win), .loseIn(lose), .winOut(win), .loseOut(lose), ..., .ghostFills(ghostFills));
 
+	// color parameters 
+	parameter BLACK = 12'b0000_0000_0000;
+	parameter WHITE = 12'b1111_1111_1111;
+	parameter WALLCOLOR = 12'b0000_0000_1111; // aka blue
+	parameter RED   = 12'b1111_0000_0000;
+	parameter GREEN = 12'b0000_1111_0000;
+	parameter YELLOW = 12'b1111_1111_0000;
+
+	// GENERAL: Coloring Display //
+	always@ (*)
+		if (~bright)
+			rgb = BLACK; // force black if NOT bright
+		else if (pacmanFill == 1)
+			rgb = YELLOW;
+		else if (wallFill == 1)
+			rgb = WALLCOLOR; // color of wall
+		else 
+			rgb = BLACK; // background color
 
 //------------
 // // OUTPUT: LEDS

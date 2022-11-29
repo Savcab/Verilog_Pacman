@@ -96,25 +96,16 @@ module pacman_top
 	// assign move_clk = DIV_CLK[19];
 
 	
-    // Make the movement buttons into SCEN
-// ee354_debouncer #(.N_dc(25)) debouncer_up 
-//         (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Up));
-// ee354_debouncer #(.N_dc(25)) debouncer_down
-//         (.CLK(sys_clk), .RESET(Reset), .PB(BtnD), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Down));
-// ee354_debouncer #(.N_dc(25)) debouncer_left 
-//         (.CLK(sys_clk), .RESET(Reset), .PB(BtnL), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Left));
-// ee354_debouncer #(.N_dc(25)) debouncer_right 
-//         (.CLK(sys_clk), .RESET(Reset), .PB(BtnR), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Right));
-// ee354_debouncer #(.N_dc(25)) debouncer_center
-ee354_debouncer #(.N_dc(25)) debouncer_up 
+    // Make the movement buttons into MCEN
+ee354_debouncer #(.N_dc(21)) debouncer_up 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(), .MCEN(CCEN_Up), .CCEN());
-ee354_debouncer #(.N_dc(25)) debouncer_down
+ee354_debouncer #(.N_dc(21)) debouncer_down
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnD), .DPB( ), .SCEN(), .MCEN(CCEN_Down), .CCEN());
-ee354_debouncer #(.N_dc(25)) debouncer_left 
+ee354_debouncer #(.N_dc(21)) debouncer_left 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnL), .DPB( ), .SCEN(), .MCEN(CCEN_Left), .CCEN());
-ee354_debouncer #(.N_dc(25)) debouncer_right 
+ee354_debouncer #(.N_dc(21)) debouncer_right 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnR), .DPB( ), .SCEN(), .MCEN(CCEN_Right), .CCEN());
-ee354_debouncer #(.N_dc(25)) debouncer_center
+ee354_debouncer #(.N_dc(21)) debouncer_center
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnC), .DPB( ), .SCEN(SCEN_Center), .MCEN( ), .CCEN());
 
 	assign Start = SCEN_Center; assign Ack = SCEN_Center;
@@ -208,7 +199,7 @@ ee354_debouncer #(.N_dc(25)) debouncer_center
 	
 	
 	// always @ (ssdscan_clk, SSD4, SSD5, SSD6, SSD7)
-	always @ (ssdscan_clk, SSD4, SSD5, SSD6, SSD7)
+	always @ (ssdscan_clk)
 	begin : SSD_SCAN_OUT
 		case (ssdscan_clk) 
 				2'b00: SSD = SSD4;

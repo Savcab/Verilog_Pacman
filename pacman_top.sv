@@ -110,7 +110,7 @@ module pacman_top
     // WILL NEED TO DECIDE ON THIS
 	assign Start = BtnC; assign Ack = BtnC; // This was used in the divider_simple and also here
 	
-
+/*
     // Make the movement buttons into SCEN
 ee354_debouncer #(.N_dc(25)) debouncer_up 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Up));
@@ -120,12 +120,13 @@ ee354_debouncer #(.N_dc(25)) debouncer_left
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnL), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Left));
 ee354_debouncer #(.N_dc(25)) debouncer_right 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnR), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Right));
-
+*/
 
     // Maze register
-    reg [479:0][639:0] maze;
+    ////reg [479:0][639:0] maze;
     // Food register
-    reg [479:0][639:0] food;
+    ////reg [479:0][639:0] food;
+    /*
     // Intersection register
     bit[3:0] intersection [431:0][379:0];
 
@@ -135,6 +136,7 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
 		for(int j = 0 ; j < $size(intersection[0]) ; j++)
 			intersection[i][j] = 15; // 15 = 4'b1111
 	end
+	*/
 	// Win and lose signal
 	wire win, lose;
 
@@ -142,16 +144,17 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
 	wire pacmanFill, wallFill;
 
     // Initialize maze with create wall module 
-	wall_module wall(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .hCount(hc), .vCount(hc), .rgb(rgb), .wallFill(wallFill));
+	wall_module wall(.clk(sys_clk), .bright(bright), .hCount(hc), .vCount(vc), .rgb(rgb), .wallFill(wallFill));
 						
 	// Initialize display controller
 	display_controller dc(.clk(sys_clk), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
-
+	
+	/*
 	// Initialize pacman movement module
     pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .bright(bright), .Left(CCEN_Left), .Right(CCEN_Right),
-							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), /*.maze(maze), */.intersection(intersection) , 
-							.rgb(rgb), .win(win), .lose(lose), .pacmanFill(pacmanFill));
-
+							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), /*.maze(maze), .intersection(intersection) ,*/ 
+							/*.rgb(rgb), .win(win), .lose(lose), .pacmanFill(pacmanFill));
+	*/
 	// assume for now there are 4 ghosts
 
 

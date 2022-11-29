@@ -22,13 +22,15 @@ parameter OFFSETH2 = 10'd130 + 10'd144;
 
 localparam
 winningScore = 30,
-xIni = 190 + OFFSETH1,
-yIni = 318 + OFFSETV1;
+xIni = 190,
+yIni = 318;
 
 // pixelSize = 21,
 
 // Local wires for simplicity
 wire leftCtrl, upCtrl, rightCtrl, downCtrl, cgLeft, cgUp, cgRight, cgDown;
+
+
 reg [3:0] cgDirections;
 reg [9:0] pacX, pacY;
 reg [49:0] counter;
@@ -44,7 +46,15 @@ end
 //	for coloring pacman
 // assign pacmanFill = ((hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)+1)) 
 // 						&& ((vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2)+1));
+assign leftCtrl = (Left && ~Up && ~Right && ~Down);
+assign upCtrl = (~Left && Up && ~Right && ~Down);
+assign rightCtrl = (~Left && ~Up && Right && ~Down);
+assign downCtrl = (~Left && ~Up && ~Right && Down);
+assign noCtrl = (~leftCtrl && ~upCtrl && ~rightCtrl && ~downCtrl);
 
+assign {cgLeft, cgUp, cgRight, cgDown} = cgDirections;
+
+assign pacmanFill = ((hCount >= (pacX + OFFSETH1 - 10'd8)) && (hCount <= (pacX + OFFSETH1 + 10'd8))) && ((vCount >= (pacY + OFFSETV1 - 10'd8)) && (vCount <= (pacY + OFFSETV1 + 10'd8)));
 // directionFill is the pixel right above that direction on pacman
 // assign leftFill = (hCount == pacX-(pixelSize/2)) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
 // assign upFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY-(pixelSize/2));
@@ -71,40 +81,29 @@ always@ (posedge clk, posedge reset) begin
 		end else if (downCtrl) begin
 			pacY = pacY + 10'd1;
 		end else begin end
-		
+		/*
 		// 34 + 24 + 432 + 24 + 44
 		// start bit 35 (legal 0), end bit 515 (legal 480)
-		if (pacY <= OFFSETV1) begin
-			pacY = OFFSETV1;
+		if (pacY <= 0) begin
+			pacY = 0;
 		end
 
-		if (pacY >= (10'd432 + OFFSETV1)) begin
-			pacY = (10'd432 + OFFSETV1);
+		if (pacY >= 10'd432) begin
+			pacY = 10'd432;
 		end
 
 		// 143 + 130 + 380 + 130 + 160
 		// start bit 144 (legal 0), end bit 783 (legal 640)
-		if (pacX <= OFFSETH1) begin
-			pacX = OFFSETH1;
+		if (pacX <= 0) begin
+			pacX = 0;
 		end
 
-		if (pacX >= (10'd380 + OFFSETH1)) begin
-			pacX = (10'd380 + OFFSETH1);
+		if (pacX >= 10'd380) begin
+			pacX = 10'd380;
 		end
-
+		*/
 		counter = 50'd0;
 	end
 end
-
-assign {cgLeft, cgUp, cgRight, cgDown} = cgDirections;
-
-assign pacmanFill = ((hCount >= (pacX - 10'd8)) && (hCount <= (pacX + 10'd8))) 
-						&& ((vCount >= (pacY - 10'd8)) && (vCount <= (pacY + 10'd8)));
-
-assign leftCtrl = (Left && ~Up && ~Right && ~Down);
-assign upCtrl = (~Left && Up && ~Right && ~Down);
-assign rightCtrl = (~Left && ~Up && Right && ~Down);
-assign downCtrl = (~Left && ~Up && ~Right && Down);
-assign noCtrl = (~leftCtrl && ~upCtrl && ~rightCtrl && ~downCtrl);
 
 endmodule

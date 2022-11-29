@@ -14,12 +14,12 @@ module pacman_movement (
 	// input bit[3:0] intersection[431:0][379:0],
 	input win,
 	input lose,
-	/* output reg [11:0] rgb, */
 	output pacmanFill
 );
 
+
 reg [7:0] state;
-reg [9:0] pacX, pacY;
+reg [8:0] pacX, pacY;
 
 parameter YELLOW = 12'b1111_1111_0000;
 parameter BLACK = 12'b0000_0000_0000;
@@ -73,18 +73,6 @@ assign noCtrl = (~leftCtrl && ~upCtrl && rightCtrl && downCtrl);
 assign pacmanFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)) 
 						&& (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2));
 
-
-// for coloring
-/*
-always@ (*) begin
-	if (~bright)
-		rgb = BLACK;
-	// else if (pacmanFill)
-		// rgb = YELLOW;
-	else
-		rgb = YELLOW;
-end
-*/
 
 // movement state machine
 always @(posedge clk, posedge reset) 

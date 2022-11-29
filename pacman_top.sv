@@ -45,8 +45,7 @@ module pacman_top
 	/*  LOCAL SIGNALS */
 	wire		Reset, ClkPort;
 	wire		board_clk, sys_clk;
-	wire [2:0] 	ssdscan_clk;
-	
+	wire [2:0] 	ssdscan_clk;	
 
 // to produce divided clock
 	reg [26:0]	DIV_CLK;
@@ -142,19 +141,21 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
 
 	// All the fill signals
 	wire pacmanFill, wallFill;
+	wire pX, pY;
+
 
     // Initialize maze with create wall module 
-	wall_module wall(.clk(sys_clk), .bright(bright), .hCount(hc), .vCount(vc), .rgb(rgb), .wallFill(wallFill));
+	wall_module wall(.clk(sys_clk), .bright(bright), .pacX(pX), .pacY(pY), .hCount(hc), .vCount(vc), .rgb(rgb), .wallFill(wallFill));
 						
 	// Initialize display controller
 	display_controller dc(.clk(sys_clk), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
 	
-	/*
+	
 	// Initialize pacman movement module
     pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .bright(bright), .Left(CCEN_Left), .Right(CCEN_Right),
 							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), /*.maze(maze), .intersection(intersection) ,*/ 
-							/*.rgb(rgb), .win(win), .lose(lose), .pacmanFill(pacmanFill));
-	*/
+							.win(win), .lose(lose), .pacmanFill(pacmanFill));
+	
 	// assume for now there are 4 ghosts
 
 

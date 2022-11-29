@@ -10,19 +10,15 @@ module pacman_movement (
 	input Down,
 	input [15:0] score,
 	input [9:0] hCount, vCount,
-	// input [479:0][639:0] maze,
-	// input bit[3:0] intersection[431:0][379:0],
+	// input [479:0][6	// input bi	input bit[3:0] intersection[431:0][379:0],
 	input win,
 	input lose,
-	/* output reg [11:0] rgb, */
+	output reg [11:0] rgb,
 	output pacmanFill
 );
 
 reg [7:0] state;
 reg [9:0] pacX, pacY;
-
-parameter YELLOW = 12'b1111_1111_0000;
-parameter BLACK = 12'b0000_0000_0000;
  
 localparam 
 INI = 	8'b00000001,
@@ -38,6 +34,9 @@ localparam
 XOFFSET = 24,
 YOFFSET = 130;
 
+
+parameter YELLOW = 12'b1111_1111_0000;
+
 localparam
 xLowerBound = 0,
 xUpperBound = 640,
@@ -45,13 +44,13 @@ yLowerBound = 0,
 yUpperBound = 480,
 speed = 5,
 winningScore = 30,
-pixelSize = 5,
+pixelSize = 28,
 xIni = 300,
 yIni = 300;
 
 // Local wires for simplicity
 wire atIntersection, leftCtrl, upCtrl, rightCtrl, downCtrl, cgLeft, cgUp, cgRight, cgDown;
-// assign atIntersection = (intersection[pacY + YOFFSET][pacX + XOFFSET] != 4'b0000);
+assign atIntersection = (intersection[pacY + YOFFSET][pacX + XOFFSET] != 4'b0000);
 assign leftCtrl = (Left && ~Up && ~Right && ~Down);
 assign upCtrl = (~Left && Up && ~Right && ~Down);
 assign rightCtrl = (~Left && ~Up && Right && ~Down);
@@ -59,32 +58,51 @@ assign downCtrl = (~Left && ~Up && ~Right && Down);
 assign noCtrl = (~leftCtrl && ~upCtrl && rightCtrl && downCtrl);
 // 	cg stands for can go
 //	intersection[i][j] is treated as {left, up, right, down}
-//assign cgLeft = (intersection[pacY + YOFFSET][pacX + XOFFSET][0] == 1);
-//assign cgUp = (intersection[pacY + YOFFSET][pacX + XOFFSET][1] == 1);
-//assign cgRight = (intersection[pacY + YOFFSET][pacX + XOFFSET][2] == 1);
-//assign cgDown = (intersection[pacY + YOFFSET][pacX + XOFFSET][3] == 1);
+// assign cgLeft = (intersection[pacY + YOFFSET][pacX + XOFFSET][0] == 1);
+// assign cgUp = (intersection[pacY + YOFFSET][pacX + XOFFSET][1] == 1);
+// assign cgRight = (intersection[pacY + YOFFSET][pacX + XOFFSET][2] == 1);
+// assign cgDown = (intersection[pacY + YOFFSET][pacX + XOFFSET][3] == 1);
 
 // assign cgLeft = (pacX - pixelSize > xLowerBound && maze[pacY][pacX-pixelSize] != 1);
 // assign cgUp = (pacY - pixelSize > yLowerBound && maze[pacY-pixelSize][pacX] != 1);
 // assign cgRight = (pacX + pixelSize < xUpperBound && maze[pacY][pacX+pixelSize] != 1);
 // assign cgDown = (pacY + pixelSize < yUpperBound && maze[pacY+pixelSize][pacX] != 1);
+reg cgLeft, cgUp, cgRight, cgDown;
 
 //	for coloring pacman
-assign pacmanFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)) 
-						&& (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2));
+assign pacmanFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)+1) 
+						&& (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2)+1);
+// directionFill is the pixel right above that direction on pacman
+assign leftFill = (hCount == pacX-(pixelSize/2)) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
+assign upFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY-(pixelSize/2));
+assign rightFill = (hCount == pacX+(pixelSize/2) + 1) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
+assign downFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY+(pixelSize/2)+1);
 
 
 // for coloring
-/*
-always@ (*) begin
-	if (~bright)
-		rgb = BLACK;
-	// else if (pacmanFill)
-		// rgb = YELLOW;
-	else
-		rgb = YELLOW;
-end
-*/
+// always@ (*) begin
+// 	if (~bright)
+// 		rgb = 12'b0000_0000_0000;
+// 	else if (pacmanFill)
+// 		rgb = YELLOW;
+// end
+
+
+// for detect if can go a certain direction
+	always@ (*) begin
+		if (leftFill && wallFill) 
+
+		else if (upFill && wallFill)
+
+		else if (rightFill && wallFill)
+
+		else if (downFill && wallFill)
+
+		count
+
+
+	end
+
 
 // movement state machine
 always @(posedge clk, posedge reset) 
@@ -98,7 +116,15 @@ always @(posedge clk, posedge reset)
          (* full_case, parallel_case *)
 		 // part of state transition for STILL, LEFT, RIGHT, UP, DOWN are the same
 		if (state == STILL || state == LEFT || state == UP || state == RIGHT || state == DOWN) begin
-			/*if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) */begin
+			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
+state == DOWN) begin
+			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
+state == DOWN) begin
+			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
+state == DOWN) begin
+			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
+ state == DOWN) begin
+			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
 				if (leftCtrl && cgLeft)
 					state <= LEFT;
 				else if (upCtrl && cgUp)

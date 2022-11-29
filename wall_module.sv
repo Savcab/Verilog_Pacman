@@ -1,6 +1,5 @@
 module wall_module (
 	input clk,
-	input pacX, pacY,
     input [9:0] hCount, vCount,
 	output wallFill
 );
@@ -11,27 +10,19 @@ module wall_module (
 	parameter OFFSETH1 = 10'd130 + 10'd144;
 	parameter OFFSETH2 = 10'd130 + 10'd144;
 
-	// color parameters 
-	parameter BLACK = 12'b0000_0000_0000;
-	parameter WHITE = 12'b1111_1111_1111;
-	parameter WALLCOLOR = 12'b0000_0000_1111; // aka blue
-	parameter RED   = 12'b1111_0000_0000;
-	parameter GREEN = 12'b0000_1111_0000;
-	parameter YELLOW = 12'b1111_1111_0000;
-
 	// general function for rectangle creation
 	function bit inBorder (int xMin, int yMin, int xMax, int yMax);
 		return ((hCount >= (xMin + OFFSETH1)) && (hCount <= (xMax + OFFSETH2))) && ((vCount >= (yMin + OFFSETV1)) && (vCount <= (yMax + OFFSETV2))) ? 1 : 0;
 	endfunction
 
-	function bit inBorderPacMan (int currX, int currY);
-		return ((hCount >= (currX + OFFSETH1 - 10'd10)) && (hCount <= (currX + OFFSETH2 + 10'd10))) && ((vCount >= (currY + OFFSETV1 - 10'd10)) && (vCount <= (currY + OFFSETV2 + 10'd10))) ? 1 : 0;
-	endfunction
+	// function bit inBorderPacMan (int currX, int currY);
+	// 	return ((hCount >= (currX + OFFSETH1 - 10'd10)) && (hCount <= (currX + OFFSETH2 + 10'd10))) && ((vCount >= (currY + OFFSETV1 - 10'd10)) && (vCount <= (currY + OFFSETV2 + 10'd10))) ? 1 : 0;
+	// endfunction
 	
 	// WALL CODE //
 	wire compA, compB, compC, compD, compE, compF, compG, compH, compI, compJ, compK, compL, compM, compN, compO, compP, compQ, compR, compS;
 	wire comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13, comp14, comp15, comp16, comp17, comp18, comp19, comp20, comp21, comp22, comp23, comp24, comp25;
-	wire pacManFill;
+	// wire pacManFill;
 
 	// vertical wall components
 	assign compA = inBorder(144, 8, 156, 48);

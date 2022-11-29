@@ -14,39 +14,37 @@ module pacman_movement (
 	output pacmanFill
 );
 
-reg [9:0] pacX, pacY;
-reg [49:0] counter;
+// offset parameters (custom offset of screen + hCount / vCount blanking offset)
+parameter OFFSETV1 = 10'd24 + 10'd34;
+parameter OFFSETV2 = 10'd24 + 10'd44;
+parameter OFFSETH1 = 10'd130 + 10'd144;
+parameter OFFSETH2 = 10'd130 + 10'd144;
 
 localparam
-XOFFSET = 24,
-YOFFSET = 130;
-
-localparam
-xLowerBound = 0,
-xUpperBound = 640,
-yLowerBound = 0,
-yUpperBound = 480,
-speed = 1,
 winningScore = 30,
-pixelSize = 20,
-xIni = 300,
-yIni = 300;
+xIni = 190 + OFFSETH1,
+yIni = 318 + OFFSETV1;
+
+// pixelSize = 21,
 
 // Local wires for simplicity
 wire leftCtrl, upCtrl, rightCtrl, downCtrl, cgLeft, cgUp, cgRight, cgDown;
-assign leftCtrl = (Left && ~Up && ~Right && ~Down);
-assign upCtrl = (~Left && Up && ~Right && ~Down);
-assign rightCtrl = (~Left && ~Up && Right && ~Down);
-assign downCtrl = (~Left && ~Up && ~Right && Down);
-assign noCtrl = (~leftCtrl && ~upCtrl && ~rightCtrl && ~downCtrl);
-
 reg [3:0] cgDirections;
-assign {cgLeft, cgUp, cgRight, cgDown} = cgDirections;
+reg [9:0] pacX, pacY;
+reg [49:0] counter;
+
+initial begin
+	pacX = xIni;
+	pacY = yIni;
+	counter = 50'd0;
+end
+
 // reg[49:0] counter;
 
 //	for coloring pacman
-assign pacmanFill = ((hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)+1)) 
-						&& ((vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2)+1));
+// assign pacmanFill = ((hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)+1)) 
+// 						&& ((vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2)+1));
+
 // directionFill is the pixel right above that direction on pacman
 // assign leftFill = (hCount == pacX-(pixelSize/2)) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
 // assign upFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY-(pixelSize/2));
@@ -57,16 +55,13 @@ assign pacmanFill = ((hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSiz
 // 	cgDirections <= 4'b1111;
 // end
 
-initial begin
-	pacX = xIni;
-	pacY = yIni;
-	counter = 50'd0;
-end
-
-
-always@ (posedge clk) begin
-	counter <= counter + 50'b1;
-	if (counter >= 50'd10000) begin
+always@ (posedge clk, posedge reset) begin
+	counter = counter + 50'b1;
+	if (reset) begin
+		pacX = xIni;
+		pacY = yIni;
+		counter = 50'd0;
+	end else if (counter >= 50'd10000) begin
 		if (leftCtrl) begin
 			pacX = pacX - 10'd1;
 		end else if (rightCtrl) begin
@@ -79,37 +74,37 @@ always@ (posedge clk) begin
 		
 		// 34 + 24 + 432 + 24 + 44
 		// start bit 35 (legal 0), end bit 515 (legal 480)
-		if (pacY <= 10'd58) begin
-			pacY = 58;
+		if (pacY <= OFFSETV1) begin
+			pacY = OFFSETV1;
 		end
 
-		if (pacY >= 10'd490) begin
-			pacY = 490;
+		if (pacY >= (10'd432 + OFFSETV1)) begin
+			pacY = (10'd432 + OFFSETV1);
 		end
 
 		// 143 + 130 + 380 + 130 + 160
 		// start bit 144 (legal 0), end bit 783 (legal 640)
-		if (pacX <= 10'd273) begin
-			pacX = 273;
+		if (pacX <= OFFSETH1) begin
+			pacX = OFFSETH1;
 		end
 
-		if (pacX >= 10'd663) begin
-			pacX = 663;
+		if (pacX >= (10'd380 + OFFSETH1)) begin
+			pacX = (10'd380 + OFFSETH1);
 		end
 
 		counter = 50'd0;
 	end
 end
 
+assign {cgLeft, cgUp, cgRight, cgDown} = cgDirections;
 
-// movement state machine
-always @(posedge reset) 
-begin
-	if (reset)
-		begin
-			pacX = xIni;
-			pacY = yIni;
-			counter = 50'd0;
-		end
-end 
+assign pacmanFill = ((hCount >= (pacX - 10'd8)) && (hCount <= (pacX + 10'd8))) 
+						&& ((vCount >= (pacY - 10'd8)) && (vCount <= (pacY + 10'd8)));
+
+assign leftCtrl = (Left && ~Up && ~Right && ~Down);
+assign upCtrl = (~Left && Up && ~Right && ~Down);
+assign rightCtrl = (~Left && ~Up && Right && ~Down);
+assign downCtrl = (~Left && ~Up && ~Right && Down);
+assign noCtrl = (~leftCtrl && ~upCtrl && ~rightCtrl && ~downCtrl);
+
 endmodule

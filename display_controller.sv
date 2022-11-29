@@ -31,14 +31,6 @@ module display_controller(
 	
 	reg pulse;
 	reg clk25;
-
-	// // color parameters 
-	// parameter BLACK = 12'b0000_0000_0000;
-	// parameter WHITE = 12'b1111_1111_1111;
-	// parameter WALLCOLOR = 12'b0000_0000_1111; // aka blue
-	// parameter RED   = 12'b1111_0000_0000;
-	// parameter GREEN = 12'b0000_1111_0000;
-	// parameter YELLOW = 12'b1111_1111_0000;
 	
 	initial begin // Set all of them initially to 0
 		clk25 = 0;

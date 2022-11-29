@@ -29,19 +29,22 @@ module pacman_top
 	output 	MemOE, MemWR, RamCS, QuadSpiFlashCS;  
 
 	// local signal declaration
-	wire [9:0] pacX, pacY;
 	wire Start, Ack, CCEN_Up, CCEN_Down, CCEN_Left, CCEN_Right, SCEN_Center;
 	wire[15:0] score;
 	reg[11:0] rgb;
+
 	assign vgaR = rgb[11:8];
 	assign vgaG = rgb[7:4];
 	assign vgaB = rgb[3:0];
+
+	initial begin
+		rgb = 12'b0000_000_0000;
+	end
 
 	// signal for display controller
 	wire bright;
 	wire [9:0] hc, vc;
 
-	
 	/*  LOCAL SIGNALS */
 	wire		Reset, ClkPort;
 	wire		board_clk, sys_clk;
@@ -50,9 +53,9 @@ module pacman_top
 // to produce divided clock
 	reg [26:0]	DIV_CLK;
 // SSD (Seven Segment Display)
-	reg [3:0]	SSD;
-	wire [3:0]	SSD7, SSD6, SSD5, SSD4, SSD3, SSD2, SSD1, SSD0;
-	reg [6:0]  	SSD_CATHODES;
+	reg [3:0] SSD;
+	wire [3:0] SSD7, SSD6, SSD5, SSD4, SSD3, SSD2, SSD1, SSD0;
+	reg [6:0] SSD_CATHODES;
 	
 	
 //------------	
@@ -93,7 +96,6 @@ module pacman_top
 //------------	
 	// In this design, we run the core design at full 50MHz clock!
 	assign	sys_clk = board_clk;
-	// assign move_clk = DIV_CLK[19];
 
 	
     // Make the movement buttons into MCEN
@@ -124,11 +126,9 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 
 	// All the fill signals
 	wire pacmanFill, wallFill;
-	wire pX, pY;
-
 
     // Initialize maze with create wall module 
-	wall_module wall(.clk(sys_clk), .pacX(pX), .pacY(pY), .hCount(hc), .vCount(vc), .wallFill(wallFill));
+	wall_module wall(.clk(sys_clk), .hCount(hc), .vCount(vc), .wallFill(wallFill));
 						
 	// Initialize display controller
 	display_controller dc(.clk(sys_clk), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
@@ -208,8 +208,7 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 	assign An7 = !(ssdscan_clk[1] && ssdscan_clk[0]); //when ssdscan_clk = 11
 	
 	
-	// always @ (ssdscan_clk, SSD4, SSD5, SSD6, SSD7)
-	always @ (ssdscan_clk)
+	always @ (ssdscan_clk, SSD4, SSD5, SSD6, SSD7)
 	begin : SSD_SCAN_OUT
 		case (ssdscan_clk) 
 				2'b00: SSD = SSD4;

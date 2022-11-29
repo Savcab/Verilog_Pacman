@@ -12,7 +12,8 @@ module pacman_movement (
 	input wallFill,
 	input win,
 	input lose,
-	output pacmanFill
+	output pacmanFill,
+	output reg [3:0] cgDirections
 );
 
 // offset parameters (custom offset of screen + hCount / vCount blanking offset)
@@ -31,7 +32,7 @@ pacWidth = 17;
 wire leftCtrl, upCtrl, rightCtrl, downCtrl, cgLeft, cgUp, cgRight, cgDown;
 
 
-reg [3:0] cgDirections;
+// reg [3:0] cgDirections;
 reg [9:0] pacX, pacY;
 reg [49:0] counter;
 
@@ -53,10 +54,10 @@ assign {cgLeft, cgUp, cgRight, cgDown} = cgDirections;
 // For coloring pacman
 assign pacmanFill = ((hCount >= (pacX + OFFSETH1 - ((pacWidth-1)/2))) && (hCount <= (pacX + OFFSETH1 + ((pacWidth-1)/2)))) && ((vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2))) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))));
 // directionFill is the pixel right above that direction on pacman
-assign leftFill = (hCount == pacX + OFFSETH1 - ((pacWidth-1)/2) - 1) && (vCount <= pacY + OFFSETV1 + ((pacWidth-1)/2)) && (vCount >= pacY + OFFSETV1 - ((pacWidth-1)/2));
-assign upFill = (hCount <= pacX + OFFSETH1 + ((pacWidth-1)/2)) && (hCount >= pacX + OFFSETH1 - ((pacWidth-1)/2)) && (vCount == pacY + OFFSETV1 - ((pacWidth-1)/2) - 1);
-assign rightFill = (hCount == pacX + OFFSETH1 + ((pacWidth-1)/2) + 1) && (vCount <= pacY + OFFSETV1 + ((pacWidth-1)/2)) && (vCount >= pacY + OFFSETV1 - ((pacWidth-1)/2));
-assign downFill = (hCount <= pacX + OFFSETH1 + ((pacWidth-1)/2)) && (hCount >= pacX + OFFSETH1 - ((pacWidth-1)/2)) && (vCount == pacY + OFFSETV1 + ((pacWidth-1)/2) + 1);
+assign leftFill = (hCount == (pacX + OFFSETH1 - ((pacWidth-1)/2) - 1)) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))) && (vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2)));
+assign upFill = (hCount <= (pacX + OFFSETH1 + ((pacWidth-1)/2))) && (hCount >= (pacX + OFFSETH1 - ((pacWidth-1)/2))) && (vCount == (pacY + OFFSETV1 - ((pacWidth-1)/2) - 1));
+assign rightFill = (hCount == (pacX + OFFSETH1 + ((pacWidth-1)/2) + 1)) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))) && (vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2)));
+assign downFill = (hCount <= (pacX + OFFSETH1 + ((pacWidth-1)/2))) && (hCount >= (pacX + OFFSETH1 - ((pacWidth-1)/2))) && (vCount == (pacY + OFFSETV1 + ((pacWidth-1)/2) + 1));
 
 // Always check to see if a direction becomes unavailable
 always@ (posedge clk) begin
@@ -89,7 +90,7 @@ always@ (posedge clk, posedge reset) begin
 		end else if (downCtrl && cgDown) begin
 			pacY = pacY + 10'd1;
 		end else begin end
-		/*
+		
 		// 34 + 24 + 432 + 24 + 44
 		// start bit 35 (legal 0), end bit 515 (legal 480)
 		if (pacY <= 0) begin
@@ -109,7 +110,7 @@ always@ (posedge clk, posedge reset) begin
 		if (pacX >= 10'd380) begin
 			pacX = 10'd380;
 		end
-		*/
+		
 
 		counter = 50'd0;
 		// Reset can go directions

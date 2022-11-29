@@ -99,21 +99,22 @@ module pacman_top
 
 	
     // Make the movement buttons into MCEN
-ee354_debouncer #(.N_dc(17)) debouncer_up 
+ee354_debouncer #(.N_dc(21)) debouncer_up 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(), .MCEN(CCEN_Up), .CCEN());
-ee354_debouncer #(.N_dc(17)) debouncer_down
+ee354_debouncer #(.N_dc(21)) debouncer_down
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnD), .DPB( ), .SCEN(), .MCEN(CCEN_Down), .CCEN());
-ee354_debouncer #(.N_dc(17)) debouncer_left 
+ee354_debouncer #(.N_dc(21)) debouncer_left 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnL), .DPB( ), .SCEN(), .MCEN(CCEN_Left), .CCEN());
-ee354_debouncer #(.N_dc(17)) debouncer_right 
+ee354_debouncer #(.N_dc(21)) debouncer_right 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnR), .DPB( ), .SCEN(), .MCEN(CCEN_Right), .CCEN());
-ee354_debouncer #(.N_dc(17)) debouncer_center
+ee354_debouncer #(.N_dc(21)) debouncer_center
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnC), .DPB( ), .SCEN(SCEN_Center), .MCEN( ), .CCEN());
 
 	assign Start = SCEN_Center; assign Ack = SCEN_Center;
 
 	// display
-	assign {Ld4, Ld3, Ld2, Ld1, Ld0} = {BtnC, CCEN_Left, CCEN_Up, CCEN_Right, CCEN_Down};
+	assign Ld4 = BtnC;
+	assign {Ld3, Ld2, Ld1, Ld0} = cgDirections;
 
 
     // Maze register
@@ -126,6 +127,7 @@ ee354_debouncer #(.N_dc(17)) debouncer_center
 
 	// All the fill signals
 	wire pacmanFill, wallFill;
+	wire [3:0] cgDirections;
 
     // Initialize maze with create wall module 
 	wall_module wall(.clk(sys_clk), .hCount(hc), .vCount(vc), .wallFill(wallFill));
@@ -136,7 +138,8 @@ ee354_debouncer #(.N_dc(17)) debouncer_center
 	
 	// Initialize pacman movement module
     pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .Left(CCEN_Left), .Right(CCEN_Right),
-							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .wallFill(wallFill), .win(win), .lose(lose), .pacmanFill(pacmanFill));
+							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .wallFill(wallFill), .win(win), .lose(lose), 
+							.pacmanFill(pacmanFill), .cgDirections(cgDirections));
 
 	// Initialize first ghost
 	// Initialize second ghost

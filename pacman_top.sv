@@ -30,7 +30,7 @@ module pacman_top
 
 	// local signal declaration
 	wire [9:0] pacX, pacY;
-	wire Start, Ack, CCEN_Up, CCEN_Down, CCEN_Left, CCEN_Right;
+	wire Start, Ack, CCEN_Up, CCEN_Down, CCEN_Left, CCEN_Right, SCEN_Center;
 	wire[15:0] score;
 	wire[11:0] rgb;
 	assign vgaR = rgb[11:8];
@@ -93,23 +93,9 @@ module pacman_top
 //------------	
 	// In this design, we run the core design at full 50MHz clock!
 	assign	sys_clk = board_clk;
-	assign move_clk = DIV_CLK[19];
-	// assign	sys_clk = DIV_CLK[25];
-
-
-	//------------         
-
-
-	// The Switch values are the values of the X and Y inputs
-	// Buttons are used to indicate start and ack signals
-	// assign Xin   =  {Sw15, Sw14, Sw13, Sw12, Sw11, Sw10, Sw9, Sw8};
-	// assign Yin   =  {Sw7,  Sw6,  Sw5,  Sw4,  Sw3,  Sw2,  Sw1, Sw0};
+	// assign move_clk = DIV_CLK[19];
 
 	
-    // WILL NEED TO DECIDE ON THIS
-	assign Start = BtnC; assign Ack = BtnC; // This was used in the divider_simple and also here
-	
-/*
     // Make the movement buttons into SCEN
 ee354_debouncer #(.N_dc(25)) debouncer_up 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Up));
@@ -119,23 +105,20 @@ ee354_debouncer #(.N_dc(25)) debouncer_left
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnL), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Left));
 ee354_debouncer #(.N_dc(25)) debouncer_right 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnR), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Right));
-*/
+ee354_debouncer #(.N_dc(25)) debouncer_center
+        (.CLK(sys_clk), .RESET(Reset), .PB(BtnC), .DPB( ), .SCEN(SCEN_Center), .MCEN( ), .CCEN());
+
+	assign Start = SCEN_Center; assign Ack = SCEN_Center;
+
+	// display
+	assign {Ld4, Ld3, Ld2, Ld1, Ld0} = {BtnC, CCEN_Left, CCEN_Up, CCEN_Right, CCEN_Down};
+
 
     // Maze register
     ////reg [479:0][639:0] maze;
     // Food register
     ////reg [479:0][639:0] food;
-    /*
-    // Intersection register
-    bit[3:0] intersection [431:0][379:0];
 
-	// For testing purposes
-	initial begin
-	for(int i = 0; i < $size(intersection) ; i++)
-		for(int j = 0 ; j < $size(intersection[0]) ; j++)
-			intersection[i][j] = 15; // 15 = 4'b1111
-	end
-	*/
 	// Win and lose signal
 	wire win, lose;
 
@@ -148,14 +131,13 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
 	wall_module wall(.clk(sys_clk), .bright(bright), .pacX(pX), .pacY(pY), .hCount(hc), .vCount(vc), .rgb(rgb), .wallFill(wallFill));
 						
 	// Initialize display controller
-	display_controller dc(.clk(sys_clk), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
+	display_controller dc(.clk(sys_clk), .hSync(hSync), .vSync(vSync), .wallFill(wallFill), .pacmanFill(pacmanFill), .bright(bright), .rgb(rgb), .hCount(hc), .vCount(vc));
 	
 	
 	// Initialize pacman movement module
     pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .bright(bright), .Left(CCEN_Left), .Right(CCEN_Right),
-							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), /*.maze(maze), .intersection(intersection) ,*/ 
-							.win(win), .lose(lose), .pacmanFill(pacmanFill));
-	
+							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .win(win), .lose(lose), .pacmanFill(pacmanFill));
+
 	// assume for now there are 4 ghosts
 
 
@@ -166,16 +148,11 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
 	
 
 	// Initialize the score module
-	// wire ghostFills;
-	// assign ghostFills = (ghostFill1 || ghostFill2 || ghostFill3 || ghostFill4);
 	// scoring scoring_module(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .winIn(win), .loseIn(lose), .winOut(win), .loseOut(lose), ..., .ghostFills(ghostFills));
 
 
 //------------
 // // OUTPUT: LEDS
-	
-// 	assign {Ld7, Ld6, Ld5, Ld4} = {Qi, Qc, Qd, Done};
-// 	assign {Ld3, Ld2, Ld1, Ld0} = {Start, BtnU, Ack, BtnD}; // We do not want to put SCEN in place of BtnU here as the Ld2 will be on for just 10ns!
 
 // //------------
 // // SSD (Seven Segment Display)

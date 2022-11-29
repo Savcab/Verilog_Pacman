@@ -23,14 +23,25 @@
 //////////////////////////////////////////////////////////////////////////////////
 module display_controller(
 	input clk,
+	input wallFill,
+	input pacmanFill,
 	output hSync, vSync,
 	output reg bright,
+	output reg [11:0] rgb,
 	output reg[9:0] hCount, 
 	output reg [9:0] vCount // Covers 800, width of the screen, because it's 2^10
 	);
 	
 	reg pulse;
 	reg clk25;
+
+	// color parameters 
+	parameter BLACK = 12'b0000_0000_0000;
+	parameter WHITE = 12'b1111_1111_1111;
+	parameter WALLCOLOR = 12'b0000_0000_1111; // aka blue
+	parameter RED   = 12'b1111_0000_0000;
+	parameter GREEN = 12'b0000_1111_0000;
+	parameter YELLOW = 12'b1111_1111_0000;
 	
 	initial begin // Set all of them initially to 0
 		clk25 = 0;
@@ -70,5 +81,16 @@ module display_controller(
 		else
 			bright <= 0;
 		end	
+
+	// GENERAL: Coloring Display //
+	always@ (*)
+		if (~bright)
+			rgb = BLACK; // force black if NOT bright
+		else if (pacmanFill == 1)
+			rgb = YELLOW;
+		else if (wallFill == 1)
+			rgb = WALLCOLOR; // color of wall
+		else 
+			rgb = BLACK; // background color
 		
 endmodule

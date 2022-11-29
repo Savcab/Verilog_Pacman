@@ -10,7 +10,6 @@ module pacman_movement (
 	input Down,
 	input [15:0] score,
 	input [9:0] hCount, vCount,
-	// input [479:0][6	// input bi	input bit[3:0] intersection[431:0][379:0],
 	input win,
 	input lose,
 	output pacmanFill
@@ -18,10 +17,7 @@ module pacman_movement (
 
 
 reg [7:0] state;
-reg [8:0] pacX, pacY;
-
-parameter YELLOW = 12'b1111_1111_0000;
-parameter BLACK = 12'b0000_0000_0000;
+reg [9:0] pacX, pacY;
  
 localparam 
 INI = 	8'b00000001,
@@ -37,28 +33,24 @@ localparam
 XOFFSET = 24,
 YOFFSET = 130;
 
-
-parameter YELLOW = 12'b1111_1111_0000;
-
 localparam
 xLowerBound = 0,
 xUpperBound = 640,
 yLowerBound = 0,
 yUpperBound = 480,
-speed = 5,
+speed = 1,
 winningScore = 30,
-pixelSize = 28,
+pixelSize = 20,
 xIni = 300,
 yIni = 300;
 
 // Local wires for simplicity
-wire atIntersection, leftCtrl, upCtrl, rightCtrl, downCtrl, cgLeft, cgUp, cgRight, cgDown;
-assign atIntersection = (intersection[pacY + YOFFSET][pacX + XOFFSET] != 4'b0000);
+wire leftCtrl, upCtrl, rightCtrl, downCtrl, cgLeft, cgUp, cgRight, cgDown;
 assign leftCtrl = (Left && ~Up && ~Right && ~Down);
 assign upCtrl = (~Left && Up && ~Right && ~Down);
 assign rightCtrl = (~Left && ~Up && Right && ~Down);
 assign downCtrl = (~Left && ~Up && ~Right && Down);
-assign noCtrl = (~leftCtrl && ~upCtrl && rightCtrl && downCtrl);
+assign noCtrl = (~leftCtrl && ~upCtrl && ~rightCtrl && ~downCtrl);
 // 	cg stands for can go
 //	intersection[i][j] is treated as {left, up, right, down}
 // assign cgLeft = (intersection[pacY + YOFFSET][pacX + XOFFSET][0] == 1);
@@ -70,151 +62,415 @@ assign noCtrl = (~leftCtrl && ~upCtrl && rightCtrl && downCtrl);
 // assign cgUp = (pacY - pixelSize > yLowerBound && maze[pacY-pixelSize][pacX] != 1);
 // assign cgRight = (pacX + pixelSize < xUpperBound && maze[pacY][pacX+pixelSize] != 1);
 // assign cgDown = (pacY + pixelSize < yUpperBound && maze[pacY+pixelSize][pacX] != 1);
-reg cgLeft, cgUp, cgRight, cgDown;
+reg [3:0] cgDirections;
+assign {cgLeft, cgUp, cgRight, cgDown} = cgDirections;
+reg[49:0] counter;
 
 //	for coloring pacman
-assign pacmanFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)+1) 
-						&& (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2)+1);
+assign pacmanFill = ((hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)+1)) 
+						&& ((vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2)+1));
 // directionFill is the pixel right above that direction on pacman
-assign leftFill = (hCount == pacX-(pixelSize/2)) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
-assign upFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY-(pixelSize/2));
-assign rightFill = (hCount == pacX+(pixelSize/2) + 1) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
-assign downFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY+(pixelSize/2)+1);
+// assign leftFill = (hCount == pacX-(pixelSize/2)) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
+// assign upFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY-(pixelSize/2));
+// assign rightFill = (hCount == pacX+(pixelSize/2) + 1) && (vCount <= pacY+(pixelSize/2)) && (vCount >= pacY-(pixelSize/2) + 1);
+// assign downFill = (hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2) + 1) && (vCount == pacY+(pixelSize/2)+1);
 
-
-// for coloring
-// always@ (*) begin
-// 	if (~bright)
-// 		rgb = 12'b0000_0000_0000;
-// 	else if (pacmanFill)
-// 		rgb = YELLOW;
+// initial begin
+// 	cgDirections <= 4'b1111;
+// 	state <= INI;
 // end
 
+initial begin
+	pacX = xIni;
+	pacY = yIni;
+	counter = 50'd0;
+	state = INI;
+end
 
-// for detect if can go a certain direction
-	always@ (*) begin
-		if (leftFill && wallFill) 
+always@ (posedge clk) begin
+	counter <= counter + 50'b1;
+	if (counter >= 50'd500000) begin
+		case (state)
+			INI:
+				begin
+					// state transition
+					if (leftCtrl)
+						state <= LEFT;
+					else if (rightCtrl)
+						state <= RIGHT;
+					else if (upCtrl)
+						state <= UP;
+					else if (downCtrl) begin
+						state <= DOWN;
+					end 
+					// else 
+				end
+			LEFT:
+				begin
+					// state transition
+					if (rightCtrl)
+						state <= RIGHT;
+					else if (upCtrl)
+						state <= UP;
+					else if (downCtrl) begin
+						state <= DOWN;
+					end
+					// else 
+					if (noCtrl) begin
+						pacX <= pacX - 1;
+					end
+				end
+			UP:
+				begin
+					if (rightCtrl)
+						state <= RIGHT;
+					else if (leftCtrl)
+						state <= LEFT;
+					else if (downCtrl) begin
+						state <= DOWN;
+					end
+					// else 
+					if (noCtrl) begin
+						pacY <= pacY - 1;
+					end
+				end
+			RIGHT:
+				begin
+					if (upCtrl)
+						state <= UP;
+					else if (leftCtrl)
+						state <= LEFT;
+					else if (downCtrl) begin
+						state <= DOWN;
+					end
+					// else
+					if (noCtrl) begin
+						pacX <= pacX + 10'd1;
+					end
+				end
+			DOWN:
+				begin
+					if (upCtrl)
+						state <= UP;
+					else if (leftCtrl)
+						state <= LEFT;
+					else if (rightCtrl) begin
+						state <= RIGHT;
+					end
+					// else
+					if (noCtrl) begin
+						pacY <= pacY + 10'd1;
+					end
+				end
+		endcase
 
-		else if (upFill && wallFill)
+		// 34 + 24 + 432 + 24 + 44
+		// start bit 35 (legal 0), end bit 515 (legal 480)
+		if (pacY >= 10'd490) begin
+			pacY = 58;
+		end
 
-		else if (rightFill && wallFill)
+		// 143 + 130 + 380 + 130 + 160
+		// start bit 144 (legal 0), end bit 783 (legal 640)
+		if (pacX >= 10'd663) begin
+			pacX = 273;
+		end
 
-		else if (downFill && wallFill)
-
-		count
-
-
+		counter = 50'd0;
 	end
+end
+
+// always@ (posedge clk) begin
+// 	counter <= counter + 50'b1;
+// 	if (counter >= 50'd5000000) begin
+// 		if (leftCtrl) begin
+// 			pacX = pacX - 10'd1;
+// 		end else if (rightCtrl) begin
+// 			pacX = pacX + 10'd1;
+// 		end else if (upCtrl) begin
+// 			pacY = pacY - 10'd1;
+// 		end else if (downCtrl) begin
+// 			pacY = pacY + 10'd1;
+// 		end else begin end
+
+// 		if (pacY == 10'd779) begin
+// 			pacY = 0;
+// 		end
+
+// 		if (pacX == 10'd524) begin
+// 			pacX = 0;
+// 		end
+
+// 		counter = 50'd0;
+// 	end
+// end
+// // for detect if can go a certain direction
+// 	always@ (posedge clk) begin
+// 		counter <= counter + 50'b1;
+// 		// if (leftFill && wallFill) 
+// 		// 	cgLeft <= 0;
+// 		// else if (upFill && wallFill)
+// 		// 	cgUp <= 0;
+// 		// else if (rightFill && wallFill)
+// 		// 	cgRight <= 0;
+// 		// else if (downFill && wallFill)
+// 		// 	cgDown <= 0;
+		
+// 		if (counter >= 50'd5000) begin
+// 			cgDirections = 4'b1111;
+// 			counter = 50'd0;
+
+// 			if (state == STILL || state == LEFT || state == UP || state == RIGHT || state == DOWN) begin
+// 				if (leftCtrl && cgLeft)
+// 					state <= LEFT;
+// 				else if (upCtrl && cgUp)
+// 					state <= UP;
+// 				else if (rightCtrl && cgRight)
+// 					state <= RIGHT;
+// 				else if (downCtrl && cgDown)
+// 					state <= DOWN;
+// 				if (win)
+// 					state <= WIN;
+// 				if (lose)
+// 					state <= LOSE;
+// 			end
+// 			case (state)
+// 				INI:
+// 				begin
+// 					// state transition
+// 					if (start)
+// 						state <= STILL;
+// 					// RTL operations
+// 					pacX <= xIni;
+// 					pacY <= yIni;
+// 				end
+// 				STILL:
+// 					begin
+// 					end
+// 				LEFT:
+// 					begin
+// 						if (~cgLeft)
+// 							state <= STILL;
+// 						pacX <= pacX - speed;
+// 					end
+// 				UP:
+// 					begin
+// 						if (~cgUp)
+// 							state <= STILL;
+// 						pacY <= pacY - speed;
+						
+// 					end
+
+// 				RIGHT:
+// 					begin
+// 						if (~cgRight)
+// 							state <= STILL;
+// 						pacX <= pacX + speed;
+// 					end
+// 				DOWN:
+// 					begin
+// 						if (~cgDown)
+// 							state <= STILL;
+// 						pacY <= pacY + speed;
+// 					end
+// 				WIN:
+// 					begin
+// 						if (ack)
+// 							state <= INI;
+// 					end
+// 				LOSE:
+// 					begin
+// 						if(ack)
+// 							state <= INI;
+// 					end
+
+// 			endcase
+
+
+// 		end
+// 	end
 
 
 // movement state machine
 always @(posedge clk, posedge reset) 
-  begin  : CU_n_DU
-    if (reset)
-       begin
-         state <= INI;
-	    end
-    else
-       begin
-         (* full_case, parallel_case *)
-		 // part of state transition for STILL, LEFT, RIGHT, UP, DOWN are the same
-		if (state == STILL || state == LEFT || state == UP || state == RIGHT || state == DOWN) begin
-			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
-state == DOWN) begin
-			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
-state == DOWN) begin
-			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
-state == DOWN) begin
-			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
- state == DOWN) begin
-			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
-				if (leftCtrl && cgLeft)
-					state <= LEFT;
-				else if (upCtrl && cgUp)
-					state <= UP;
-				else if (rightCtrl && cgRight)
-					state <= RIGHT;
-				else if (downCtrl && cgDown)
-					state <= DOWN;
-				else
-					state <= STILL;
-			end
-			if (win)
-				state <= WIN;
-			if (lose) 
-				state <= LOSE;
+begin
+	if (reset)
+		begin
+			state <= INI;
 		end
+	// else 
+	// 	begin
+	// 	if (state == STILL || state == LEFT || state == UP || state == RIGHT || state == DOWN) begin
+	// 		if (leftCtrl && cgLeft)
+	// 			state <= LEFT;
+	// 		else if (upCtrl && cgUp)
+	// 			state <= UP;
+	// 		else if (rightCtrl && cgRight)
+	// 			state <= RIGHT;
+	// 		else if (downCtrl && cgDown)
+	// 			state <= DOWN;
+	// 		else
+	// 			state <= STILL;
+	// 		if (win)
+	// 			state <= WIN;
+	// 		if (lose)
+	// 			state <= LOSE;
+	// 	end
+	// 	case (state)
+	// 		INI:
+	//           begin
+	// 	         // state transition
+	// 	         if (start)
+	// 	           state <= STILL;
+	// 	         // RTL operations
+	// 			 pacX <= xIni;
+	// 			 pacY <= yIni;
+	//           end
+	// 		STILL:
+	// 			begin
+	// 			end
+	// 		LEFT:
+	// 			begin
+	// 				if (~cgLeft)
+	// 					state <= STILL;
+	// 			end
+	// 		UP:
+	// 			begin
+	// 				if (~cgUp)
+	// 					state <= STILL;
+	// 			end
 
-         case (state)
-	        INI	: 
-	          begin
-		         // state transition
-		         if (start)
-		           state <= STILL;
-		         // RTL operations            	              
-				 //INITIAL VALUES TO BE DETERMINED
-				 pacX <= xIni;
-				 pacY <= yIni;
-	          end
-	        STILL	:
-				begin
-					//state transition
-					//no RTL operations
-				end
-			LEFT:
-				begin
-				// state transition
-				if (noCtrl && atIntersection && cgLeft)
-					state <= LEFT;
-				// RTL operations
-				if (cgLeft)
-					pacX <= pacX - speed;
-				end
-			UP:
-				begin
-				// state transition
-				if (noCtrl && atIntersection && cgUp)
-					state <= UP;
-				// RTL operations
-				if (cgUp)
-					pacY <= pacY - speed;
-				end
-			RIGHT:
-				begin
-				// state transition
-				if (noCtrl && atIntersection && cgRight)
-					state <= RIGHT;
-				// RTL operations
-				if (cgRight)
-					pacX <= pacX + speed;
-				end
-			DOWN:
-				begin
-				// state transition
-				if (noCtrl && atIntersection && cgDown)
-					state <= DOWN;
-				// RTL operations
-				if (cgDown)
-					pacY <= pacY + speed;
-				end
-			WIN:
-				begin
-				// state transition
-				if (ack)
-					state <= INI;
-				// RTL operations
-				end
-			LOSE:
-				begin
-				// state transition
-				if (ack)
-					state <= INI;
-				// RTL operations
-				end
+	// 		RIGHT:
+	// 			begin
+	// 				if (~cgRight)
+	// 					state <= STILL;
+	// 			end
+	// 		DOWN:
+	// 			begin
+	// 				if (~cgDown)
+	// 					state <= STILL;
+	// 			end
+	// 		WIN:
+	// 			begin
+	// 				if (ack)
+	// 					state <= INI;
+	// 			end
+	// 		LOSE:
+	// 			begin
+	// 				if(ack)
+	// 					state <= INI;
+	// 			end
+
+	// 	endcase
+	// end
+end
+
+
+
+
+//   begin  : CU_n_DU
+//     if (reset)
+//        begin
+//          state <= INI;
+// 	    end
+//     else
+//        begin
+// 		 // part of state transition for STILL, LEFT, RIGHT, UP, DOWN are the same
+// 		if (state == STILL || state == LEFT || state == UP || state == RIGHT || state == DOWN) begin
+// 			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
+// state == DOWN) begin
+// 			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
+// state == DOWN) begin
+// 			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
+// state == DOWN) begin
+// 			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
+//  state == DOWN) begin
+// 			if (intersection[pacX+XOFFSET][pacY + YOFFSET] == 1) begin
+// 				if (leftCtrl && cgLeft)
+// 					state <= LEFT;
+// 				else if (upCtrl && cgUp)
+// 					state <= UP;
+// 				else if (rightCtrl && cgRight)
+// 					state <= RIGHT;
+// 				else if (downCtrl && cgDown)
+// 					state <= DOWN;
+// 				else
+// 					state <= STILL;
+// 			end
+// 			if (win)
+// 				state <= WIN;
+// 			if (lose) 
+// 				state <= LOSE;
+// 		end
+
+//          case (state)
+// 	        INI	: 
+// 	          begin
+// 		         // state transition
+// 		         if (start)
+// 		           state <= STILL;
+// 		         // RTL operations            	              
+// 				 //INITIAL VALUES TO BE DETERMINED
+// 				 pacX <= xIni;
+// 				 pacY <= yIni;
+// 	          end
+// 	        STILL	:
+// 				begin
+// 					//state transition
+// 					//no RTL operations
+// 				end
+// 			LEFT:
+// 				begin
+// 				// state transition
+// 				if (noCtrl && atIntersection && cgLeft)
+// 					state <= LEFT;
+// 				// RTL operations
+// 				if (cgLeft)
+// 					pacX <= pacX - speed;
+// 				end
+// 			UP:
+// 				begin
+// 				// state transition
+// 				if (noCtrl && atIntersection && cgUp)
+// 					state <= UP;
+// 				// RTL operations
+// 				if (cgUp)
+// 					pacY <= pacY - speed;
+// 				end
+// 			RIGHT:
+// 				begin
+// 				// state transition
+// 				if (noCtrl && atIntersection && cgRight)
+// 					state <= RIGHT;
+// 				// RTL operations
+// 				if (cgRight)
+// 					pacX <= pacX + speed;
+// 				end
+// 			DOWN:
+// 				begin
+// 				// state transition
+// 				if (noCtrl && atIntersection && cgDown)
+// 					state <= DOWN;
+// 				// RTL operations
+// 				if (cgDown)
+// 					pacY <= pacY + speed;
+// 				end
+// 			WIN:
+// 				begin
+// 				// state transition
+// 				if (ack)
+// 					state <= INI;
+// 				// RTL operations
+// 				end
+// 			LOSE:
+// 				begin
+// 				// state transition
+// 				if (ack)
+// 					state <= INI;
+// 				// RTL operations
+// 				end
 			
 			
-      endcase
-    end 
-  end 
-endmodule  
-
+//       endcase
+//     end 
+endmodule

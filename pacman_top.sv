@@ -80,7 +80,7 @@ module pacman_top
 // routing resources in the FPGA.
 
 	// BUFGP BUFGP2 (Reset, BtnC); In the case of Spartan 3E (on Nexys-2 board), we were using BUFGP to provide global routing for the reset signal. But Spartan 6 (on Nexys-3) does not allow this.
-	assign Reset = BtnC;
+	// assign Reset = BtnC;
 	
 //------------
 	// Our clock is too fast (100MHz) for SSD scanning
@@ -127,7 +127,9 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 
 	// All the fill signals
 	wire pacmanFill, wallFill;
+	// DEBUGGING SIGNALS
 	wire [3:0] cgDirections;
+	wire allFills;
 
     // Initialize maze with create wall module 
 	wall_module wall(.clk(sys_clk), .hCount(hc), .vCount(vc), .wallFill(wallFill));
@@ -139,13 +141,26 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 	// Initialize pacman movement module
     pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .Left(CCEN_Left), .Right(CCEN_Right),
 							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .wallFill(wallFill), .win(win), .lose(lose), 
-							.pacmanFill(pacmanFill), .cgDirections(cgDirections));
+							.pacmanFill(pacmanFill), .cgDirections(cgDirections), .allFills(allFills));
+
+	// movement clock for ghost
+	wire movement_clk;
+	assign movement_clk = DIV_CLK[19];
+	wire touchGhost1, touchGhost2;//, touchGhost3, touchGhost4;
+	wire ghostFill1, ghostFill2; //ghostFill3, ghostFill4;
+	wire allGhostFills = (ghostFill1 || ghostFill2);
 
 	// Initialize first ghost
+	ghost ghost1(.move_clk(movement_clk), .reset(Reset), .pacmanFill(pacmanFill), .xIni(9'd100), .yIni(9'd100), 
+				.direction(2'b11), .speed(4'd5), .hCount(hc), .vCount(vc), .ghostFill(ghostFill1), .touchPac(touchGhost1));
 	// Initialize second ghost
+	ghost ghost2(.move_clk(movement_clk), .reset(Reset), .pacmanFill(pacmanFill), .xIni(9'd300), .yIni(9'd100), 
+				.direction(2'b11), .speed(4'd5), .hCount(hc), .vCount(vc), .ghostFill(ghostFill2), .touchPac(touchGhost2));
 	// Initialize third ghost
 	// Initialize the fourth ghost
-	
+
+	// Game over logic
+	assign Reset = (BtnC || touchGhost1 || touchGhost2);
 
 	// Initialize the score module
 	// scoring scoring_module(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .winIn(win), .loseIn(lose), .winOut(win), .loseOut(lose), ..., .ghostFills(ghostFills));
@@ -162,10 +177,16 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 	always@ (*)
 		if (~bright)
 			rgb = BLACK; // force black if NOT bright
+		else if (allGhostFills == 1) 
+			rgb = RED;
 		else if (pacmanFill == 1)
 			rgb = YELLOW;
 		else if (wallFill == 1)
 			rgb = WALLCOLOR; // color of wall
+		//DEBUGGING
+		else if (allFills == 1)
+			rgb = RED;
+		//ENDDEBUGGING
 		else 
 			rgb = BLACK; // background color
 

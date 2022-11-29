@@ -72,7 +72,7 @@ always@ (posedge clk) begin
 end
 
 always@ (posedge clk, posedge reset) begin
-	counter = counter + 50'b1;
+	counter <= counter + 50'b1;
 
 	if (reset) begin
 		pacX = xIni;

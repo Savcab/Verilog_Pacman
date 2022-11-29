@@ -99,15 +99,15 @@ module pacman_top
 
 	
     // Make the movement buttons into MCEN
-ee354_debouncer #(.N_dc(21)) debouncer_up 
+ee354_debouncer #(.N_dc(17)) debouncer_up 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(), .MCEN(CCEN_Up), .CCEN());
-ee354_debouncer #(.N_dc(21)) debouncer_down
+ee354_debouncer #(.N_dc(17)) debouncer_down
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnD), .DPB( ), .SCEN(), .MCEN(CCEN_Down), .CCEN());
-ee354_debouncer #(.N_dc(21)) debouncer_left 
+ee354_debouncer #(.N_dc(17)) debouncer_left 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnL), .DPB( ), .SCEN(), .MCEN(CCEN_Left), .CCEN());
-ee354_debouncer #(.N_dc(21)) debouncer_right 
+ee354_debouncer #(.N_dc(17)) debouncer_right 
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnR), .DPB( ), .SCEN(), .MCEN(CCEN_Right), .CCEN());
-ee354_debouncer #(.N_dc(21)) debouncer_center
+ee354_debouncer #(.N_dc(17)) debouncer_center
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnC), .DPB( ), .SCEN(SCEN_Center), .MCEN( ), .CCEN());
 
 	assign Start = SCEN_Center; assign Ack = SCEN_Center;

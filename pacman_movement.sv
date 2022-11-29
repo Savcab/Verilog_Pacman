@@ -13,12 +13,15 @@ module pacman_movement (
 	// input [479:0][6	// input bi	input bit[3:0] intersection[431:0][379:0],
 	input win,
 	input lose,
-	output reg [11:0] rgb,
 	output pacmanFill
 );
 
+
 reg [7:0] state;
-reg [9:0] pacX, pacY;
+reg [8:0] pacX, pacY;
+
+parameter YELLOW = 12'b1111_1111_0000;
+parameter BLACK = 12'b0000_0000_0000;
  
 localparam 
 INI = 	8'b00000001,

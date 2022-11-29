@@ -11,7 +11,7 @@ module pacman_movement (
 	input [15:0] score,
 	input [9:0] hCount, vCount,
 	// input [479:0][639:0] maze,
-	input bit[3:0] [431:0][379:0] intersection,
+	input bit[3:0] intersection[431:0][379:0],
 	input win,
 	input lose,
 	output reg [11:0] rgb,

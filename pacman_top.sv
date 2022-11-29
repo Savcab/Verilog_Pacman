@@ -127,7 +127,7 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
     // Food register
     reg [479:0][639:0] food;
     // Intersection register
-    bit[3:0] intersection [431:0][339:0];
+    bit[3:0] intersection [431:0][379:0];
 
 	// For testing purposes
 	initial begin
@@ -142,15 +142,15 @@ ee354_debouncer #(.N_dc(25)) debouncer_right
 	wire pacmanFill, wallFill;
 
     // Initialize maze with create wall module 
-	wall wall_module(.clk(sys_clk), .reset(Reset), .ack(Ack), .bright(bright), .hCount(hc), .vCount(hc), .rgb(rgb), .wallFill(wallFill));
+	wall_module wall(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .hCount(hc), .vCount(hc), .rgb(rgb), .wallFill(wallFill));
 						
 	// Initialize display controller
 	display_controller dc(.clk(sys_clk), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
 
 	// Initialize pacman movement module
-    pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .bright(bright), .Left(CCEN_Left), .Right(CCEN_Right),
+    pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .bright(bright), .Left(CCEN_Left), .Right(CCEN_Right),
 							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), /*.maze(maze), */.intersection(intersection) , 
-							.rgb(rgb), .win(win), .lose(lose), .pacManFill(pacmanFill));
+							.rgb(rgb), .win(win), .lose(lose), .pacmanFill(pacmanFill));
 
 	// assume for now there are 4 ghosts
 

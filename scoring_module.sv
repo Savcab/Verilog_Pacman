@@ -7,23 +7,25 @@ module scoring_module (
     input [9:0] pacX,
     input [9:0] pacY,
 	input [9:0] hCount, vCount,
-	input [479:0] maze [639:0],
-	input [479:0] intersection [639:0],
-    input [479:0] pellets [639:0],
+	input [431:0] maze [379:0],
+	input [431:0] intersection [379:0],
+    input [431:0] pellets [379:0],
 	input ghostFills,
 	input pacmanFill,
 	output reg [15:0] score,
 	output reg [11:0] rgb,
 	output winOut,
 	output loseOut,
-    output [479:0] new_pellets [639:0]
+    output [431:0] new_pellets [379:0]
     );
 
 	reg [4:0] state;
+    initial begin
     // inialize new_pellets
 	for(int i = 0; i < $size(pellets) ; i++)
 		for(int j = 0 ; j < $size(pellets[0]) ; j++)
             new_pellets[i][j] = pellets[i][j];
+    end
 
     // winning and losing conditions
 	

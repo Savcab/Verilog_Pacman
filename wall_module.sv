@@ -3,13 +3,10 @@ module wall_module (
 	input reset,
 	input ack,
 	input start,
-	input bright,
     input [9:0] hCount, vCount,
 	output reg [11:0] rgb,
 	output wallFill
 );
-
-wire wallFill;
 
 localparam
 OFFSETV1 = 24,

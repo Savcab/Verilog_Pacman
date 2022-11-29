@@ -97,14 +97,23 @@ module pacman_top
 
 	
     // Make the movement buttons into SCEN
+// ee354_debouncer #(.N_dc(25)) debouncer_up 
+//         (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Up));
+// ee354_debouncer #(.N_dc(25)) debouncer_down
+//         (.CLK(sys_clk), .RESET(Reset), .PB(BtnD), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Down));
+// ee354_debouncer #(.N_dc(25)) debouncer_left 
+//         (.CLK(sys_clk), .RESET(Reset), .PB(BtnL), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Left));
+// ee354_debouncer #(.N_dc(25)) debouncer_right 
+//         (.CLK(sys_clk), .RESET(Reset), .PB(BtnR), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Right));
+// ee354_debouncer #(.N_dc(25)) debouncer_center
 ee354_debouncer #(.N_dc(25)) debouncer_up 
-        (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Up));
+        (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(), .MCEN(CCEN_Up), .CCEN());
 ee354_debouncer #(.N_dc(25)) debouncer_down
-        (.CLK(sys_clk), .RESET(Reset), .PB(BtnD), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Down));
+        (.CLK(sys_clk), .RESET(Reset), .PB(BtnD), .DPB( ), .SCEN(), .MCEN(CCEN_Down), .CCEN());
 ee354_debouncer #(.N_dc(25)) debouncer_left 
-        (.CLK(sys_clk), .RESET(Reset), .PB(BtnL), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Left));
+        (.CLK(sys_clk), .RESET(Reset), .PB(BtnL), .DPB( ), .SCEN(), .MCEN(CCEN_Left), .CCEN());
 ee354_debouncer #(.N_dc(25)) debouncer_right 
-        (.CLK(sys_clk), .RESET(Reset), .PB(BtnR), .DPB( ), .SCEN(), .MCEN( ), .CCEN(CCEN_Right));
+        (.CLK(sys_clk), .RESET(Reset), .PB(BtnR), .DPB( ), .SCEN(), .MCEN(CCEN_Right), .CCEN());
 ee354_debouncer #(.N_dc(25)) debouncer_center
         (.CLK(sys_clk), .RESET(Reset), .PB(BtnC), .DPB( ), .SCEN(SCEN_Center), .MCEN( ), .CCEN());
 
@@ -125,6 +134,7 @@ ee354_debouncer #(.N_dc(25)) debouncer_center
 	// All the fill signals
 	wire pacmanFill, wallFill;
 	wire pX, pY;
+	wire [49:0] pac_counter;
 
 
     // Initialize maze with create wall module 
@@ -136,7 +146,11 @@ ee354_debouncer #(.N_dc(25)) debouncer_center
 	
 	// Initialize pacman movement module
     pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .bright(bright), .Left(CCEN_Left), .Right(CCEN_Right),
-							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .win(win), .lose(lose), .pacmanFill(pacmanFill));
+							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .win(win), .lose(lose), .pacmanFill(pacmanFill),
+							.counter(pac_counter));
+
+	// FOR DEBUGGING
+	assign score = pac_counter[15:0];
 
 	// assume for now there are 4 ghosts
 
@@ -193,6 +207,7 @@ ee354_debouncer #(.N_dc(25)) debouncer_center
 	assign An7 = !(ssdscan_clk[1] && ssdscan_clk[0]); //when ssdscan_clk = 11
 	
 	
+	// always @ (ssdscan_clk, SSD4, SSD5, SSD6, SSD7)
 	always @ (ssdscan_clk, SSD4, SSD5, SSD6, SSD7)
 	begin : SSD_SCAN_OUT
 		case (ssdscan_clk) 

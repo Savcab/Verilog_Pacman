@@ -12,7 +12,8 @@ module pacman_movement (
 	input [9:0] hCount, vCount,
 	input win,
 	input lose,
-	output pacmanFill
+	output pacmanFill,
+	output reg [49:0] counter
 );
 
 
@@ -64,7 +65,7 @@ assign noCtrl = (~leftCtrl && ~upCtrl && ~rightCtrl && ~downCtrl);
 // assign cgDown = (pacY + pixelSize < yUpperBound && maze[pacY+pixelSize][pacX] != 1);
 reg [3:0] cgDirections;
 assign {cgLeft, cgUp, cgRight, cgDown} = cgDirections;
-reg[49:0] counter;
+// reg[49:0] counter;
 
 //	for coloring pacman
 assign pacmanFill = ((hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSize/2)+1)) 
@@ -79,131 +80,167 @@ assign pacmanFill = ((hCount <= pacX+(pixelSize/2)) && (hCount >= pacX-(pixelSiz
 // 	cgDirections <= 4'b1111;
 // 	state <= INI;
 // end
+reg pulse1, pulse2, pulse3, pulse4;
+// reg pulse5, pulse6, pulse7, pulse8, pulse9, pulse10, pulse11, pulse12;
 
 initial begin
 	pacX = xIni;
 	pacY = yIni;
 	counter = 50'd0;
 	state = INI;
-end
-
-always@ (posedge clk) begin
-	counter <= counter + 50'b1;
-	if (counter >= 50'd500000) begin
-		case (state)
-			INI:
-				begin
-					// state transition
-					if (leftCtrl)
-						state <= LEFT;
-					else if (rightCtrl)
-						state <= RIGHT;
-					else if (upCtrl)
-						state <= UP;
-					else if (downCtrl) begin
-						state <= DOWN;
-					end 
-					// else 
-				end
-			LEFT:
-				begin
-					// state transition
-					if (rightCtrl)
-						state <= RIGHT;
-					else if (upCtrl)
-						state <= UP;
-					else if (downCtrl) begin
-						state <= DOWN;
-					end
-					// else 
-					if (noCtrl) begin
-						pacX <= pacX - 1;
-					end
-				end
-			UP:
-				begin
-					if (rightCtrl)
-						state <= RIGHT;
-					else if (leftCtrl)
-						state <= LEFT;
-					else if (downCtrl) begin
-						state <= DOWN;
-					end
-					// else 
-					if (noCtrl) begin
-						pacY <= pacY - 1;
-					end
-				end
-			RIGHT:
-				begin
-					if (upCtrl)
-						state <= UP;
-					else if (leftCtrl)
-						state <= LEFT;
-					else if (downCtrl) begin
-						state <= DOWN;
-					end
-					// else
-					if (noCtrl) begin
-						pacX <= pacX + 10'd1;
-					end
-				end
-			DOWN:
-				begin
-					if (upCtrl)
-						state <= UP;
-					else if (leftCtrl)
-						state <= LEFT;
-					else if (rightCtrl) begin
-						state <= RIGHT;
-					end
-					// else
-					if (noCtrl) begin
-						pacY <= pacY + 10'd1;
-					end
-				end
-		endcase
-
-		// 34 + 24 + 432 + 24 + 44
-		// start bit 35 (legal 0), end bit 515 (legal 480)
-		if (pacY >= 10'd490) begin
-			pacY = 58;
-		end
-
-		// 143 + 130 + 380 + 130 + 160
-		// start bit 144 (legal 0), end bit 783 (legal 640)
-		if (pacX >= 10'd663) begin
-			pacX = 273;
-		end
-
-		counter = 50'd0;
-	end
+	pulse1 = 0;
+	pulse2 = 0;
+	pulse3 = 0;
+	pulse4 = 0;
 end
 
 // always@ (posedge clk) begin
 // 	counter <= counter + 50'b1;
-// 	if (counter >= 50'd5000000) begin
-// 		if (leftCtrl) begin
-// 			pacX = pacX - 10'd1;
-// 		end else if (rightCtrl) begin
-// 			pacX = pacX + 10'd1;
-// 		end else if (upCtrl) begin
-// 			pacY = pacY - 10'd1;
-// 		end else if (downCtrl) begin
-// 			pacY = pacY + 10'd1;
-// 		end else begin end
+// 	if (counter >= 50'd500000) begin
+// 		case (state)
+// 			INI:
+// 				begin
+// 					// state transition
+// 					if (leftCtrl)
+// 						state <= LEFT;
+// 					else if (rightCtrl)
+// 						state <= RIGHT;
+// 					else if (upCtrl)
+// 						state <= UP;
+// 					else if (downCtrl) begin
+// 						state <= DOWN;
+// 					end 
+// 					// else 
+// 				end
+// 			LEFT:
+// 				begin
+// 					// state transition
+// 					if (rightCtrl)
+// 						state <= RIGHT;
+// 					else if (upCtrl)
+// 						state <= UP;
+// 					else if (downCtrl) begin
+// 						state <= DOWN;
+// 					end
+// 					// else 
+// 					if (noCtrl) begin
+// 						pacX <= pacX - 1;
+// 					end
+// 				end
+// 			UP:
+// 				begin
+// 					if (rightCtrl)
+// 						state <= RIGHT;
+// 					else if (leftCtrl)
+// 						state <= LEFT;
+// 					else if (downCtrl) begin
+// 						state <= DOWN;
+// 					end
+// 					// else 
+// 					if (noCtrl) begin
+// 						pacY <= pacY - 1;
+// 					end
+// 				end
+// 			RIGHT:
+// 				begin
+// 					if (upCtrl)
+// 						state <= UP;
+// 					else if (leftCtrl)
+// 						state <= LEFT;
+// 					else if (downCtrl) begin
+// 						state <= DOWN;
+// 					end
+// 					// else
+// 					if (noCtrl) begin
+// 						pacX <= pacX + 10'd1;
+// 					end
+// 				end
+// 			DOWN:
+// 				begin
+// 					if (upCtrl)
+// 						state <= UP;
+// 					else if (leftCtrl)
+// 						state <= LEFT;
+// 					else if (rightCtrl) begin
+// 						state <= RIGHT;
+// 					end
+// 					// else
+// 					if (noCtrl) begin
+// 						pacY <= pacY + 10'd1;
+// 					end
+// 				end
+// 		endcase
 
-// 		if (pacY == 10'd779) begin
-// 			pacY = 0;
+// 		// 34 + 24 + 432 + 24 + 44
+// 		// start bit 35 (legal 0), end bit 515 (legal 480)
+// 		if (pacY >= 10'd490) begin
+// 			pacY = 58;
 // 		end
 
-// 		if (pacX == 10'd524) begin
-// 			pacX = 0;
+// 		// 143 + 130 + 380 + 130 + 160
+// 		// start bit 144 (legal 0), end bit 783 (legal 640)
+// 		if (pacX >= 10'd663) begin
+// 			pacX = 273;
 // 		end
 
 // 		counter = 50'd0;
 // 	end
 // end
+
+
+always@ (posedge clk) begin
+	pulse1 = ~pulse1;
+end
+always@ (posedge pulse1) begin
+	pulse2 = ~pulse2;
+end
+always@ (posedge pulse2) begin
+	pulse3 = ~pulse3;
+end
+always@ (posedge pulse3) begin
+	pulse4 = ~pulse4;
+end
+always@ (posedge pulse4) begin
+	// counter <= counter + 50'b1;
+end
+
+
+always@ (posedge clk) begin
+	counter <= counter + 50'b1;
+	if (counter >= 50'd10000) begin
+		if (leftCtrl) begin
+			pacX = pacX - 10'd1;
+		end else if (rightCtrl) begin
+			pacX = pacX + 10'd1;
+		end else if (upCtrl) begin
+			pacY = pacY - 10'd1;
+		end else if (downCtrl) begin
+			pacY = pacY + 10'd1;
+		end else begin end
+		
+		// 34 + 24 + 432 + 24 + 44
+		// start bit 35 (legal 0), end bit 515 (legal 480)
+		if (pacY <= 10'd58) begin
+			pacY = 58;
+		end
+
+		if (pacY >= 10'd490) begin
+			pacY = 490;
+		end
+
+		// 143 + 130 + 380 + 130 + 160
+		// start bit 144 (legal 0), end bit 783 (legal 640)
+		if (pacX <= 10'd273) begin
+			pacX = 273;
+		end
+
+		if (pacX >= 10'd663) begin
+			pacX = 663;
+		end
+
+		counter = 50'd0;
+	end
+end
 // // for detect if can go a certain direction
 // 	always@ (posedge clk) begin
 // 		counter <= counter + 50'b1;

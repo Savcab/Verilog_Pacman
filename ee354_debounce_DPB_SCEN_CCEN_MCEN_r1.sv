@@ -170,7 +170,7 @@ always @ (posedge CLK, posedge RESET)
 						
 				   SCEN_st: begin
 					     debounce_count <= 0;
-				         MCEN_count <= MCEN_count + 1;
+				        //  MCEN_count <= MCEN_count + 1;
 				         state <= WS;
 				        end
 				   
@@ -188,7 +188,7 @@ always @ (posedge CLK, posedge RESET)
 				      
 				   MCEN_st: begin
 					     debounce_count <= 0;
-				         MCEN_count <= MCEN_count + 1;
+				        //  MCEN_count <= MCEN_count + 1;
 				         state <= CCEN_st;
 				        end
 				   

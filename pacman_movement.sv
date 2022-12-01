@@ -9,9 +9,9 @@ module pacman_movement (
 	input Down,
 	input [15:0] score,
 	input [9:0] hCount, vCount,
-	input wallFill,
 	input win,
 	input lose,
+	input resetW,
 	output pacmanFill,
 	output reg [3:0] cgDirections
 );
@@ -49,52 +49,40 @@ assign rightCtrl = (~Left && ~Up && Right && ~Down);
 assign downCtrl = (~Left && ~Up && ~Right && Down);
 assign noCtrl = (~leftCtrl && ~upCtrl && ~rightCtrl && ~downCtrl);
 
-assign {cgLeft, cgUp, cgRight, cgDown} = cgDirections;
-
 // For coloring pacman
-assign pacmanFill = ((hCount >= (pacX + OFFSETH1 - ((pacWidth-1)/2))) && (hCount <= (pacX + OFFSETH1 + ((pacWidth-1)/2)))) && ((vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2))) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))));
+assign pacmanFill = ((hCount >= ((pacX + OFFSETH1) - ((pacWidth-1)/2))) && (hCount <= (pacX + OFFSETH1 + ((pacWidth-1)/2)))) && ((vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2))) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))));
 // directionFill is the pixel right above that direction on pacman
-assign leftFill = (hCount == (pacX + OFFSETH1 - ((pacWidth-1)/2) - 1)) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))) && (vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2)));
-assign upFill = (hCount <= (pacX + OFFSETH1 + ((pacWidth-1)/2))) && (hCount >= (pacX + OFFSETH1 - ((pacWidth-1)/2))) && (vCount == (pacY + OFFSETV1 - ((pacWidth-1)/2) - 1));
-assign rightFill = (hCount == (pacX + OFFSETH1 + ((pacWidth-1)/2) + 1)) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))) && (vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2)));
-assign downFill = (hCount <= (pacX + OFFSETH1 + ((pacWidth-1)/2))) && (hCount >= (pacX + OFFSETH1 - ((pacWidth-1)/2))) && (vCount == (pacY + OFFSETV1 + ((pacWidth-1)/2) + 1));
+assign leftFill = (hCount == ((pacX + OFFSETH1) - ((pacWidth-1)/2) - 2)) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))) && (vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2)));
+assign upFill = (hCount <= ((pacX + OFFSETH1) + ((pacWidth-1)/2))) && (hCount >= (pacX + OFFSETH1 - ((pacWidth-1)/2))) && (vCount == (pacY + OFFSETV1 - ((pacWidth-1)/2) - 2));
+assign rightFill = (hCount == ((pacX + OFFSETH1) + ((pacWidth-1)/2) + 2)) && (vCount <= (pacY + OFFSETV1 + ((pacWidth-1)/2))) && (vCount >= (pacY + OFFSETV1 - ((pacWidth-1)/2)));
+assign downFill = (hCount <= ((pacX + OFFSETH1) + ((pacWidth-1)/2))) && (hCount >= (pacX + OFFSETH1 - ((pacWidth-1)/2))) && (vCount == (pacY + OFFSETV1 + ((pacWidth-1)/2) + 2));
 
 // Always check to see if a direction becomes unavailable
 always@ (posedge clk) begin
-	if (leftFill && wallFill) begin
-		cgDirections <= cgDirections & 4'b0111;
-	end else if (upFill && wallFill) begin
-		cgDirections <= cgDirections & 4'b1011;
-	end else if (rightFill && wallFill) begin
-		cgDirections <= cgDirections & 4'b1101;
-	end else if (downFill && wallFill) begin
-		cgDirections <= cgDirections & 4'b1110;
-	end
+	cgDirections = {leftFill, upFill, rightFill, downFill};
 end
 
 always@ (posedge clk, posedge reset) begin
 	counter <= counter + 50'b1;
-
-	if (reset) begin
+	if (reset || resetW) begin
 		pacX = xIni;
 		pacY = yIni;
 		counter = 50'd0;
-		cgDirections = 4'b1111;
 	end else if (counter >= 50'd10000) begin
-		if (leftCtrl && cgLeft) begin
+		if (leftCtrl) begin
 			pacX = pacX - 10'd1;
-		end else if (rightCtrl && cgRight) begin
+		end else if (rightCtrl) begin
 			pacX = pacX + 10'd1;
-		end else if (upCtrl && cgUp) begin
+		end else if (upCtrl) begin
 			pacY = pacY - 10'd1;
-		end else if (downCtrl && cgDown) begin
+		end else if (downCtrl) begin
 			pacY = pacY + 10'd1;
 		end else begin end
 		
 		// 34 + 24 + 432 + 24 + 44
 		// start bit 35 (legal 0), end bit 515 (legal 480)
-		if (pacY <= 0) begin
-			pacY = 0;
+		if (pacY <= 8) begin
+			pacY = 8;
 		end
 
 		if (pacY >= 10'd432) begin
@@ -103,18 +91,15 @@ always@ (posedge clk, posedge reset) begin
 
 		// 143 + 130 + 380 + 130 + 160
 		// start bit 144 (legal 0), end bit 783 (legal 640)
-		if (pacX <= 0) begin
-			pacX = 0;
+		if (pacX <= 8) begin
+			pacX = 8;
 		end
 
 		if (pacX >= 10'd380) begin
 			pacX = 10'd380;
 		end
-		
 
 		counter = 50'd0;
-		// Reset can go directions
-		cgDirections = 4'b1111;
 	end
 end
 

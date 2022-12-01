@@ -36,7 +36,8 @@ module wall_module (
 	assign compI = inBorder(264, 156, 276, 264);
 	assign compJ = inBorder(64, 236, 76, 304);
 	assign compK = inBorder(304, 236, 316, 304);
-	assign compL = inBorder(184, 252, 196, 304);
+	// assign compL = inBorder(184, 252, 196, 304);
+	assign compL = inBorder(184, 252, 196, 264);
 	assign compM = inBorder(104, 292, 116, 356);
 	assign compN = inBorder(264, 292, 276, 356);
 	assign compO = inBorder(36, 344, 48, 384);

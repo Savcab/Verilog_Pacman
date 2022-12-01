@@ -30,7 +30,7 @@ module pacman_top
 
 	// local signal declaration
 	wire Start, Ack, CCEN_Up, CCEN_Down, CCEN_Left, CCEN_Right, SCEN_Center;
-	wire[15:0] score;
+	reg[15:0] score;
 	reg[11:0] rgb;
 
 	assign vgaR = rgb[11:8];
@@ -38,7 +38,7 @@ module pacman_top
 	assign vgaB = rgb[3:0];
 
 	initial begin
-		rgb = 12'b0000_000_0000;
+		rgb = 12'b0000_0000_0000;
 	end
 
 	// signal for display controller
@@ -48,7 +48,7 @@ module pacman_top
 	/*  LOCAL SIGNALS */
 	wire		Reset, ClkPort;
 	wire		board_clk, sys_clk;
-	wire [2:0] 	ssdscan_clk;	
+	wire [2:0] 	ssdscan_clk, ssdscan_clk2;	
 
 // to produce divided clock
 	reg [26:0]	DIV_CLK;
@@ -80,7 +80,7 @@ module pacman_top
 // routing resources in the FPGA.
 
 	// BUFGP BUFGP2 (Reset, BtnC); In the case of Spartan 3E (on Nexys-2 board), we were using BUFGP to provide global routing for the reset signal. But Spartan 6 (on Nexys-3) does not allow this.
-	// assign Reset = BtnC;
+	assign Reset = BtnC;
 	
 //------------
 	// Our clock is too fast (100MHz) for SSD scanning
@@ -114,22 +114,14 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 
 	// display
 	assign Ld4 = BtnC;
-	assign {Ld3, Ld2, Ld1, Ld0} = cgDirections;
-
-
-    // Maze register
-    ////reg [479:0][639:0] maze;
-    // Food register
-    ////reg [479:0][639:0] food;
 
 	// Win and lose signal
-	wire win, lose;
+	wire win, lose, resetW;
 
 	// All the fill signals
-	wire pacmanFill, wallFill;
-	// DEBUGGING SIGNALS
+	wire pacmanFill, wallFill, ghostFill1;
 	wire [3:0] cgDirections;
-	wire allFills;
+	wire goalFill;
 
     // Initialize maze with create wall module 
 	wall_module wall(.clk(sys_clk), .hCount(hc), .vCount(vc), .wallFill(wallFill));
@@ -140,30 +132,19 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 	
 	// Initialize pacman movement module
     pacman_movement pacman(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .Left(CCEN_Left), .Right(CCEN_Right),
-							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .wallFill(wallFill), .win(win), .lose(lose), 
-							.pacmanFill(pacmanFill), .cgDirections(cgDirections), .allFills(allFills));
-
-	// movement clock for ghost
-	wire movement_clk;
-	assign movement_clk = DIV_CLK[19];
-	wire touchGhost1, touchGhost2;//, touchGhost3, touchGhost4;
-	wire ghostFill1, ghostFill2; //ghostFill3, ghostFill4;
-	wire allGhostFills = (ghostFill1 || ghostFill2);
+							.Up(CCEN_Up), .Down(CCEN_Down), .score(score), .hCount(hc), .vCount(vc), .win(win), .lose(lose), .resetW(resetW),
+							.pacmanFill(pacmanFill), .cgDirections(cgDirections));
 
 	// Initialize first ghost
-	ghost ghost1(.move_clk(movement_clk), .reset(Reset), .pacmanFill(pacmanFill), .xIni(9'd100), .yIni(9'd100), 
-				.direction(2'b11), .speed(4'd5), .hCount(hc), .vCount(vc), .ghostFill(ghostFill1), .touchPac(touchGhost1));
+	// ghost ghost1(.move_clk(ssdscan_clk2), .reset(Reset), .xIni(10'd130), .yIni(10'd102), .speed(1'd1), 
+	// 				.hCount(hc), .vCount(vc), .resetW(resetW), .ghostFill(ghostFill1));
+
 	// Initialize second ghost
-	ghost ghost2(.move_clk(movement_clk), .reset(Reset), .pacmanFill(pacmanFill), .xIni(9'd300), .yIni(9'd100), 
-				.direction(2'b11), .speed(4'd5), .hCount(hc), .vCount(vc), .ghostFill(ghostFill2), .touchPac(touchGhost2));
 	// Initialize third ghost
 	// Initialize the fourth ghost
 
-	// Game over logic
-	assign Reset = (BtnC || touchGhost1 || touchGhost2);
-
-	// Initialize the score module
-	// scoring scoring_module(.clk(sys_clk), .reset(Reset), .ack(Ack), .start(Start), .winIn(win), .loseIn(lose), .winOut(win), .loseOut(lose), ..., .ghostFills(ghostFills));
+	// Initialize the goal
+	goal finishLine(.clk(clk), .hCount(hc), .vCount(vc), .goalFill(goalFill));
 
 	// color parameters 
 	parameter BLACK = 12'b0000_0000_0000;
@@ -173,20 +154,36 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 	parameter GREEN = 12'b0000_1111_0000;
 	parameter YELLOW = 12'b1111_1111_0000;
 
+	// scoring logic
+	wire touchGoal;
+	assign touchGoal = (pacmanFill && goalFill) ? 1 : 0;
+	
+	wire die;
+	assign die = ((((cgDirections[0] || cgDirections[1]) || (cgDirections[2] || cgDirections[3])) && wallFill) || (pacmanFill && ghostFill1)) ? 1 : 0;
+	assign resetW = (die || touchGoal);
+	// assign resetW = ((((cgDirections[0] || cgDirections[1]) || (cgDirections[2] || cgDirections[3])) && wallFill) || (pacmanFill && ghostFill1) || touchGoal) ? 1 : 0;
+
+	always @ (*)
+		if (touchGoal)
+			score <= score + 1;
+		else if (die)
+			score <= 0;
+
+
 	// GENERAL: Coloring Display //
 	always@ (*)
 		if (~bright)
 			rgb = BLACK; // force black if NOT bright
-		else if (allGhostFills == 1) 
+		else if (((cgDirections[0] || cgDirections[1]) || (cgDirections[2] || cgDirections[3])) && wallFill) // down
 			rgb = RED;
+		else if (goalFill == 1)
+			rgb = GREEN;
 		else if (pacmanFill == 1)
 			rgb = YELLOW;
+		else if (ghostFill1)
+		 	rgb = WHITE;
 		else if (wallFill == 1)
 			rgb = WALLCOLOR; // color of wall
-		//DEBUGGING
-		else if (allFills == 1)
-			rgb = RED;
-		//ENDDEBUGGING
 		else 
 			rgb = BLACK; // background color
 
@@ -223,8 +220,10 @@ ee354_debouncer #(.N_dc(21)) debouncer_center
 //     //                    |  0     0  |  1     1  |           |           
 // 	//  DIV_CLK[19]       |___________|           |___________|
 // 	//
-	
+	// 100,000 hz = 100k cycles per second
+	// 
 	assign ssdscan_clk = DIV_CLK[20:19];
+	assign ssdscan_clk2 = DIV_CLK[17]; // 14 is too slow 
 
 	assign An4 = !(~ssdscan_clk[1] && ~ssdscan_clk[0]); // when ssdscan_clk = 00
 	assign An5 = !(~ssdscan_clk[1] && ssdscan_clk[0]); // when ssdscan_clk = 01
